@@ -1,32 +1,31 @@
-/* ========================================================
-   ieAutom8n Enterprise White-Label Branding CSS
-   ======================================================== */
+/* ieAutom8n Universal White-Label CSS */
 
-/* 1. Global Favicon and Title */
 :root {
   --ie-brand-logo: url("https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png");
 }
 
-/* 2. Hide and Replace Logo in Setup, Signin, and Auth pages */
+/* 1. Universal Logo Replacement */
 div[data-test-id="n8n-logo"],
-div[class*="logoContainer"] {
+div[class*="logoContainer"],
+div[class*="headerLogo"] {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
+  gap: 10px !important;
 }
 
 div[data-test-id="n8n-logo"] svg,
-div[class*="logoContainer"] svg {
+div[class*="logoContainer"] svg,
+div[class*="headerLogo"] svg {
   display: none !important;
 }
 
 div[data-test-id="n8n-logo"]::before,
-div[class*="logoContainer"]::before {
+div[class*="logoContainer"]::before,
+div[class*="headerLogo"]::before {
   content: "" !important;
   display: inline-block !important;
-  width: 42px !important;
-  height: 42px !important;
+  width: 38px !important;
+  height: 38px !important;
   background-image: var(--ie-brand-logo) !important;
   background-size: contain !important;
   background-repeat: no-repeat !important;
@@ -36,28 +35,18 @@ div[class*="logoContainer"]::before {
 }
 
 div[data-test-id="n8n-logo"]::after,
-div[class*="logoContainer"]::after {
+div[class*="logoContainer"]::after,
+div[class*="headerLogo"]::after {
   content: "ieAutom8n" !important;
   font-family: inherit !important;
-  font-size: 22px !important;
+  font-size: 20px !important;
   font-weight: 800 !important;
   letter-spacing: -0.5px !important;
   color: var(--color--text--dark, #1a1a1a) !important;
   display: inline-block !important;
 }
 
-/* When sidebar is collapsed, only show circular business icon */
 div[class*="sidebarCollapsed"]::after,
 div[data-test-id="n8n-logo"].sidebarCollapsed::after {
-  display: none !important;
-}
-
-/* 3. Header / Nav branding */
-header div[class*="logo"] svg {
-  display: none !important;
-}
-
-/* 4. Onboarding modal logo and title replacement */
-div[role="dialog"] div[class*="logo"] svg {
   display: none !important;
 }
