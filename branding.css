@@ -1,0 +1,49 @@
+/* ieAutom8n Custom Branding Styles */
+
+/* Hide the default n8n SVG icons and replace with ieAutom8n logo */
+[data-test-id="n8n-logo"] svg {
+  display: none !important;
+}
+
+[data-test-id="n8n-logo"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  text-decoration: none !important;
+}
+
+[data-test-id="n8n-logo"]::before {
+  content: "" !important;
+  display: inline-block !important;
+  width: 38px !important;
+  height: 38px !important;
+  background-image: url("https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png") !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+[data-test-id="n8n-logo"]::after {
+  content: "ieAutom8n" !important;
+  font-family: inherit !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+  color: var(--color--text--dark, #1a1a1a) !important;
+  display: inline-block !important;
+}
+
+/* Sidebar collapsed state: show only the logo circle */
+[data-test-id="n8n-logo"].sidebarCollapsed::after {
+  display: none !important;
+}
+
+/* Style the top header bar brand display */
+.ie-brand-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
