@@ -4,6 +4,13 @@
 # Ignore everything first
 *
 
+# === ieAutom8n Branding Assets ===
+!branding.css
+!branding.js
+!landing.html
+!company-logo.png
+!inject-branding.sh
+
 # === n8n main image (docker/images/n8n/Dockerfile) ===
 !compiled
 !compiled/**

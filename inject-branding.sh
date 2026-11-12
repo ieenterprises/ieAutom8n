@@ -5,8 +5,8 @@ echo "=== Injecting ieAutom8n Branding ==="
 
 LOGO_URL="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png"
 
-# Locate all dist directories inside n8n
-DIST_DIRS=$(find /usr/local/lib/node_modules/n8n -type d -name "dist" 2>/dev/null)
+# Locate all n8n dist directories
+DIST_DIRS=$(find / -type d -name "dist" 2>/dev/null | grep -E "editor-ui|n8n" || true)
 
 for dir in $DIST_DIRS; do
   echo "Found dist dir: $dir"
@@ -23,8 +23,8 @@ for dir in $DIST_DIRS; do
   fi
 done
 
-# Find all index.html files inside n8n
-HTML_FILES=$(find /usr/local/lib/node_modules/n8n -type f -name "index.html" 2>/dev/null)
+# Find all n8n index.html files
+HTML_FILES=$(find / -type f -name "index.html" 2>/dev/null | grep -E "editor-ui|n8n" || true)
 
 for file in $HTML_FILES; do
   echo "Patching index.html: $file"
@@ -36,8 +36,8 @@ for file in $HTML_FILES; do
   sed -i "s|/favicon.ico|$LOGO_URL|g" "$file"
 
   # 3. Inject branding.css and branding.js before </head>
-  INJECTION='<link rel="stylesheet" href="/branding.css"><script src="/branding.js" defer></script></head>'
-  sed -i "s|</head>|$INJECTION|g" "$file"
+  INJECTION='<link rel="icon" type="image/png" href="'"$LOGO_URL"'" \/><link rel="stylesheet" href="\/branding.css"><script src="\/branding.js" defer><\/script><\/head>'
+  sed -i "s|<\/head>|$INJECTION|g" "$file"
 done
 
 echo "=== ieAutom8n Branding Injection Completed ==="

@@ -11,7 +11,7 @@ COPY company-logo.png /tmp/company-logo.png
 COPY inject-branding.sh /tmp/inject-branding.sh
 
 # Run injector to white-label the frontend
-RUN chmod +x /tmp/inject-branding.sh && /tmp/inject-branding.sh
+RUN sed -i 's/\r$//' /tmp/inject-branding.sh && sh /tmp/inject-branding.sh
 
 USER node
 
