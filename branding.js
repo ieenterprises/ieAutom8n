@@ -1,22 +1,73 @@
-// ieAutom8n White-Label & Landing Page Controller
+// ieAutom8n Complete White-Label & Branding Controller
 (function() {
   const LOGO_URL = "https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png";
   const APP_NAME = "ieAutom8n";
 
-  // 1. Landing Page Redirection logic
+  // 1. Landing page routing for root path
   const path = window.location.pathname;
   const isRoot = path === '/' || path === '';
   const hasAppParam = window.location.search.includes('app=1');
 
-  // If visitor lands on root without explicit app param or auth cookie, show landing page
   if (isRoot && !hasAppParam && !document.cookie.includes('n8n-auth')) {
     window.location.replace('/landing.html');
     return;
   }
 
-  // 2. Continuous branding & text sanitizer
-  function applyBranding() {
-    // Document Title
+  // 2. Comprehensive text sanitization (replaces 'n8n' with 'ieAutom8n' everywhere)
+  function sanitizeNodeText(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.nodeValue && /\bn8n\b/i.test(node.nodeValue)) {
+        node.nodeValue = node.nodeValue.replace(/\bn8n\b/gi, APP_NAME);
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE' && node.tagName !== 'CODE') {
+        for (const child of node.childNodes) {
+          sanitizeNodeText(child);
+        }
+      }
+    }
+  }
+
+  // 3. Logo replacement everywhere
+  function replaceLogos() {
+    // Target any n8n logo containers or SVG logos
+    const logoContainers = document.querySelectorAll(
+      '[data-test-id="n8n-logo"], div[class*="logoContainer"], div[class*="headerLogo"], .n8n-logo'
+    );
+
+    logoContainers.forEach(container => {
+      if (container.dataset.ieBranded === "true") return;
+
+      // Hide default SVGs
+      container.querySelectorAll('svg').forEach(svg => {
+        svg.style.setProperty('display', 'none', 'important');
+      });
+
+      if (!container.querySelector('.ie-custom-logo-pill')) {
+        const brandBox = document.createElement('div');
+        brandBox.className = 'ie-custom-logo-pill';
+        brandBox.style.cssText = 'display: inline-flex; align-items: center; gap: 10px; cursor: pointer;';
+
+        const img = document.createElement('img');
+        img.src = LOGO_URL;
+        img.alt = APP_NAME + ' Logo';
+        img.style.cssText = 'width: 38px; height: 38px; border-radius: 50%; object-fit: contain; flex-shrink: 0;';
+
+        const text = document.createElement('span');
+        text.textContent = APP_NAME;
+        text.style.cssText = 'font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: inherit;';
+
+        brandBox.appendChild(img);
+        brandBox.appendChild(text);
+        container.appendChild(brandBox);
+      }
+
+      container.dataset.ieBranded = "true";
+    });
+  }
+
+  // 4. Favicon & Document Title
+  function updateMetadata() {
     if (!document.title.includes(APP_NAME)) {
       document.title = document.title.replace(/n8n(\.io)?/gi, APP_NAME);
       if (!document.title.includes(APP_NAME)) {
@@ -24,66 +75,46 @@
       }
     }
 
-    // Favicon
     let favicon = document.querySelector("link[rel*='icon']");
     if (favicon && favicon.href !== LOGO_URL) {
       favicon.href = LOGO_URL;
     }
-
-    // Replace text in modals, headers, dialogs
-    const textContainers = document.querySelectorAll(
-      'div[role="dialog"], div[class*="modal"], div[class*="container"], h1, h2, h3, p, label, .el-dialog'
-    );
-    textContainers.forEach(el => {
-      for (const node of el.childNodes) {
-        if (node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.includes('n8n')) {
-          node.nodeValue = node.nodeValue.replace(/n8n/gi, APP_NAME);
-        }
-      }
-    });
-
-    // Replace SVG logos with Company Logo
-    const logoContainers = document.querySelectorAll('[data-test-id="n8n-logo"], div[class*="logoContainer"]');
-    logoContainers.forEach(container => {
-      if (container.dataset.ieBranded === "true") return;
-
-      container.querySelectorAll('svg').forEach(svg => {
-        svg.style.setProperty('display', 'none', 'important');
-      });
-
-      if (!container.querySelector('.ie-brand-rendered')) {
-        const brandWrapper = document.createElement('div');
-        brandWrapper.className = 'ie-brand-rendered';
-        brandWrapper.style.cssText = 'display: inline-flex; align-items: center; gap: 10px; cursor: pointer;';
-
-        const img = document.createElement('img');
-        img.src = LOGO_URL;
-        img.alt = APP_NAME + ' Logo';
-        img.style.cssText = 'width: 40px; height: 40px; border-radius: 50%; object-fit: contain; flex-shrink: 0;';
-
-        const label = document.createElement('span');
-        label.textContent = APP_NAME;
-        label.style.cssText = 'font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: inherit;';
-
-        brandWrapper.appendChild(img);
-        brandWrapper.appendChild(label);
-        container.appendChild(brandWrapper);
-      }
-
-      container.dataset.ieBranded = "true";
-    });
   }
 
-  // Run on load and on every DOM mutation (Vue reactive updates)
+  // Master branding runner
+  function applyEverything() {
+    updateMetadata();
+    replaceLogos();
+    if (document.body) {
+      sanitizeNodeText(document.body);
+    }
+  }
+
+  // Execution triggers
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyBranding);
+    document.addEventListener("DOMContentLoaded", applyEverything);
   } else {
-    applyBranding();
+    applyEverything();
   }
 
-  const observer = new MutationObserver(applyBranding);
+  window.addEventListener("load", applyEverything);
+
+  // Periodic check to capture async Vue renders and modals
+  let count = 0;
+  const timer = setInterval(() => {
+    applyEverything();
+    count++;
+    if (count > 40) clearInterval(timer); // Runs for 20 seconds
+  }, 500);
+
+  // MutationObserver for continuous reactive changes
+  const observer = new MutationObserver(() => {
+    applyEverything();
+  });
+
   observer.observe(document.documentElement, {
     childList: true,
     subtree: true,
+    characterData: true,
   });
 })();
