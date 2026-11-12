@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ieAutom8n - Next-Gen Workflow Automation</title>
-  <link rel="icon" href="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -48,15 +48,15 @@
       letter-spacing: -0.5px;
     }
     .brand-logo {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       object-fit: contain;
     }
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
     }
     .btn {
       padding: 0.65rem 1.4rem;
@@ -81,9 +81,11 @@
     .btn-secondary {
       background-color: transparent;
       color: var(--gray-600);
+      border: 1px solid #cbd5e1;
     }
     .btn-secondary:hover {
       color: var(--dark);
+      border-color: var(--dark);
     }
     .hero {
       max-width: 1100px;
@@ -185,7 +187,6 @@
       padding: 4rem 2rem;
       text-align: center;
       position: relative;
-      overflow: hidden;
     }
     .cta-banner h2 {
       font-size: 2.5rem;
@@ -220,19 +221,19 @@
       <span>ieAutom8n</span>
     </a>
     <div class="nav-links">
-      <a href="/signin" class="btn btn-secondary">Sign In</a>
-      <a href="/setup" class="btn btn-primary">Launch App</a>
+      <a href="/signin?app=1" class="btn btn-secondary">Sign In</a>
+      <a href="/setup?app=1" class="btn btn-primary">Sign Up / Get Started</a>
     </div>
   </nav>
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="badge">🚀 Powered by ieEnterprises</div>
+    <div class="badge">🚀 Enterprise Workflow Orchestration</div>
     <h1>Automate Every Task with <span>ieAutom8n</span></h1>
-    <p>Build powerful AI-assisted automations, orchestrate complex workflows, and seamlessly integrate your entire business stack with ease.</p>
+    <p>Build enterprise-grade AI automations, connect your databases and APIs, and streamline your business operations securely in one place.</p>
     <div class="hero-actions">
-      <a href="/setup" class="btn btn-primary btn-lg">Get Started / Open App</a>
-      <a href="/signin" class="btn btn-secondary btn-lg" style="border: 1px solid #cbd5e1;">Sign In to Workspace</a>
+      <a href="/setup?app=1" class="btn btn-primary btn-lg">Sign Up (Get Started)</a>
+      <a href="/signin?app=1" class="btn btn-secondary btn-lg">Sign In to Workspace</a>
     </div>
   </section>
 
@@ -261,7 +262,7 @@
   <section class="cta-banner">
     <h2>Ready to Supercharge Your Business?</h2>
     <p>Scale your operational productivity with self-hosted, private workflow intelligence.</p>
-    <a href="/setup" class="btn btn-primary btn-lg" style="box-shadow: 0 4px 20px rgba(255, 109, 90, 0.5);">Open Your ieAutom8n Workspace</a>
+    <a href="/setup?app=1" class="btn btn-primary btn-lg" style="box-shadow: 0 4px 20px rgba(255, 109, 90, 0.5);">Open Your ieAutom8n Workspace</a>
   </section>
 
   <!-- Footer -->

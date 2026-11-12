@@ -1,24 +1,33 @@
-/* ieAutom8n Custom Branding Styles */
+/* ========================================================
+   ieAutom8n Enterprise White-Label Branding CSS
+   ======================================================== */
 
-/* Hide the default n8n SVG icons and replace with ieAutom8n logo */
-[data-test-id="n8n-logo"] svg {
-  display: none !important;
+/* 1. Global Favicon and Title */
+:root {
+  --ie-brand-logo: url("https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png");
 }
 
-[data-test-id="n8n-logo"] {
+/* 2. Hide and Replace Logo in Setup, Signin, and Auth pages */
+div[data-test-id="n8n-logo"],
+div[class*="logoContainer"] {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 10px !important;
-  text-decoration: none !important;
+  gap: 12px !important;
 }
 
-[data-test-id="n8n-logo"]::before {
+div[data-test-id="n8n-logo"] svg,
+div[class*="logoContainer"] svg {
+  display: none !important;
+}
+
+div[data-test-id="n8n-logo"]::before,
+div[class*="logoContainer"]::before {
   content: "" !important;
   display: inline-block !important;
-  width: 38px !important;
-  height: 38px !important;
-  background-image: url("https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png") !important;
+  width: 42px !important;
+  height: 42px !important;
+  background-image: var(--ie-brand-logo) !important;
   background-size: contain !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
@@ -26,24 +35,29 @@
   flex-shrink: 0 !important;
 }
 
-[data-test-id="n8n-logo"]::after {
+div[data-test-id="n8n-logo"]::after,
+div[class*="logoContainer"]::after {
   content: "ieAutom8n" !important;
   font-family: inherit !important;
   font-size: 22px !important;
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   letter-spacing: -0.5px !important;
   color: var(--color--text--dark, #1a1a1a) !important;
   display: inline-block !important;
 }
 
-/* Sidebar collapsed state: show only the logo circle */
-[data-test-id="n8n-logo"].sidebarCollapsed::after {
+/* When sidebar is collapsed, only show circular business icon */
+div[class*="sidebarCollapsed"]::after,
+div[data-test-id="n8n-logo"].sidebarCollapsed::after {
   display: none !important;
 }
 
-/* Style the top header bar brand display */
-.ie-brand-banner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* 3. Header / Nav branding */
+header div[class*="logo"] svg {
+  display: none !important;
+}
+
+/* 4. Onboarding modal logo and title replacement */
+div[role="dialog"] div[class*="logo"] svg {
+  display: none !important;
 }

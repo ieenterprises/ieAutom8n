@@ -22,3 +22,5 @@ services:
         value: "true"
       - key: EXECUTIONS_DATA_MAX_AGE
         value: "168"
+      - key: EXTERNAL_FRONTEND_HOOKS_URLS
+        value: "/branding.js"
