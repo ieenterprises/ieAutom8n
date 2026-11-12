@@ -3,63 +3,81 @@ set -e
 
 echo "=== Injecting ieAutom8n Branding ==="
 
-LOGO_URL="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png"
+node -e '
+const fs = require("fs");
+const path = require("path");
 
-# Find all dist directories inside n8n
-for dir in $(find /usr/local/lib/node_modules/n8n -type d -name "dist" 2>/dev/null); do
-  echo "Injecting into dist directory: $dir"
-  mkdir -p "$dir/static"
+const LOGO_URL = "https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png";
+const APP_NAME = "ieAutom8n";
 
-  # Copy to root of dist
-  cp -f /tmp/branding.css "$dir/branding.css" || true
-  cp -f /tmp/branding.js "$dir/branding.js" || true
-  cp -f /tmp/landing.html "$dir/landing.html" || true
-  cp -f /tmp/company-logo.png "$dir/company-logo.png" || true
-  cp -f /tmp/company-logo.png "$dir/favicon.ico" || true
+function findDistDirs(dir) {
+  let results = [];
+  try {
+    const list = fs.readdirSync(dir);
+    for (const item of list) {
+      if (item === "node_modules" && dir.includes(".pnpm")) continue;
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        if (item === "dist" && (fullPath.includes("editor-ui") || fullPath.endsWith("n8n/dist") || fullPath.includes("cli/dist"))) {
+          results.push(fullPath);
+        } else {
+          results = results.concat(findDistDirs(fullPath));
+        }
+      }
+    }
+  } catch (e) {}
+  return results;
+}
 
-  # Copy to static/ inside dist so it bypasses historyApiHandler
-  cp -f /tmp/branding.css "$dir/static/branding.css" || true
-  cp -f /tmp/branding.js "$dir/static/branding.js" || true
-  cp -f /tmp/landing.html "$dir/static/landing.html" || true
-  cp -f /tmp/company-logo.png "$dir/static/company-logo.png" || true
-  cp -f /tmp/company-logo.png "$dir/static/favicon.ico" || true
-  cp -f /tmp/company-logo.png "$dir/static/n8n-logo.png" || true
+const distDirs = findDistDirs("/usr/local/lib/node_modules/n8n");
+console.log("Discovered target UI directories:", distDirs);
 
-  # Deep replace strings across all JS and JSON chunks in this dist
-  echo "Deep string replacement in: $dir"
-  find "$dir" -type f \( -name "*.js" -o -name "*.json" \) -exec sed -i \
-    -e 's/n8n Assistant/ieAutom8n Assistant/g' \
-    -e 's/n8n assistant/ieAutom8n assistant/g' \
-    -e 's/about n8n/about ieAutom8n/g' \
-    -e 's/with n8n/with ieAutom8n/g' \
-    -e 's/for n8n/for ieAutom8n/g' \
-    -e 's/in n8n/in ieAutom8n/g' \
-    -e 's/to n8n/to ieAutom8n/g' \
-    -e 's/from n8n/from ieAutom8n/g' \
-    -e 's/tailor n8n to you/tailor ieAutom8n to you/g' \
-    -e 's/Customize n8n to you/Customize ieAutom8n to you/g' \
-    -e 's/Welcome to n8n/Welcome to ieAutom8n/g' \
-    -e 's/Get ready for n8n/Get ready for ieAutom8n/g' \
-    -e 's/Set up owner account/Create ieAutom8n Account/g' \
-    {} + 2>/dev/null || true
-done
+for (const dir of distDirs) {
+  const staticDir = path.join(dir, "static");
+  if (!fs.existsSync(staticDir)) {
+    fs.mkdirSync(staticDir, { recursive: true });
+  }
 
-# Patch all index.html files
-for file in $(find /usr/local/lib/node_modules/n8n -type f -name "index.html" 2>/dev/null); do
-  echo "Patching index.html: $file"
-  
-  # 1. Update Title
-  sed -i 's/<title>.*<\/title>/<title>ieAutom8n - Workflow Automation<\/title>/g' "$file"
+  // Copy branding files to both dist and dist/static
+  const filesToCopy = ["branding.css", "branding.js", "landing.html", "company-logo.png"];
+  for (const f of filesToCopy) {
+    const src = path.join("/tmp", f);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(dir, f));
+      fs.copyFileSync(src, path.join(staticDir, f));
+    }
+  }
 
-  # 2. Fix Favicon: remove any existing / broken icon tags and insert fresh clean tag
-  sed -i 's/<link rel="icon".*\/>//g' "$file"
-  sed -i 's/<link rel="icon".*>//g' "$file"
-  sed -i 's/<head>/<head><link rel="icon" type="image\/png" href="'"$LOGO_URL"'" \/>/g' "$file"
+  // Copy favicon
+  const logoSrc = "/tmp/company-logo.png";
+  if (fs.existsSync(logoSrc)) {
+    fs.copyFileSync(logoSrc, path.join(dir, "favicon.ico"));
+    fs.copyFileSync(logoSrc, path.join(staticDir, "favicon.ico"));
+    fs.copyFileSync(logoSrc, path.join(staticDir, "n8n-logo.png"));
+  }
 
-  # 3. Inject branding.css via /static/ path so it bypasses historyApiHandler
-  if ! grep -q "static/branding.css" "$file"; then
-    sed -i 's|</head>|<link rel="stylesheet" href="/static/branding.css"></head>|g' "$file"
-  fi
-done
+  // Patch index.html
+  const indexPath = path.join(dir, "index.html");
+  if (fs.existsSync(indexPath)) {
+    console.log("Patching index.html at:", indexPath);
+    let html = fs.readFileSync(indexPath, "utf8");
 
-echo "=== ieAutom8n Rebranding Successfully Injected ==="
+    // Title
+    html = html.replace(/<title>.*?<\/title>/gi, `<title>${APP_NAME} - Workflow Automation</title>`);
+
+    // Clean old icon tags and inject clean company favicon
+    html = html.replace(/<link[^>]*rel=["'"]icon["'"][^>]*>/gi, "");
+    html = html.replace("<head>", `<head>\n\t\t<link rel="icon" type="image/png" href="${LOGO_URL}" />`);
+
+    // Inject stylesheet via /static/ path if not already present
+    if (!html.includes("/static/branding.css")) {
+      html = html.replace("</head>", `\t<link rel="stylesheet" href="/static/branding.css">\n</head>`);
+    }
+
+    fs.writeFileSync(indexPath, html, "utf8");
+  }
+}
+'
+
+echo "=== ieAutom8n Branding Successfully Injected ==="
