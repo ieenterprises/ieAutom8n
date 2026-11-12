@@ -1,5 +1,5 @@
 # Production Dockerfile for deploying n8n to Render.com
-FROM docker.n8n.io/n8nio/n8n:latest
+FROM n8nio/n8n:latest
 
 USER root
 
