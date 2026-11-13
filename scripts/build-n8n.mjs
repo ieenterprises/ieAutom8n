@@ -277,10 +277,9 @@ try {
 			const expected = lockfilePackages[`${binding}@${version}`]?.resolution?.integrity;
 			if (!expected) throw new Error(`pnpm-lock.yaml has no integrity for ${binding}@${version}`);
 
-			const [{ filename, integrity }] = JSON.parse(
-				(await $`npm pack ${binding}@${version} --pack-destination ${bindingTarballDir} --json`)
-					.stdout,
-			);
+			const packResult = await $`npm pack ${binding}@${version} --pack-destination ${bindingTarballDir} --json`;
+			const jsonMatch = packResult.stdout.match(/\[[\s\S]*\]/);
+			const [{ filename, integrity }] = JSON.parse(jsonMatch ? jsonMatch[0] : packResult.stdout);
 			if (integrity !== expected) {
 				throw new Error(`${binding}@${version} does not match the pnpm-lock.yaml integrity`);
 			}
