@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { N8nMarkdown } from '@n8n/design-system';
 import BaseBanner from './BaseBanner.vue';
 
@@ -11,6 +12,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const displayContent = computed(() => {
+	return props.content ? props.content.replace(/\bn8n\b/gi, 'ieAutom8n') : '';
+});
 </script>
 
 <template>
@@ -21,7 +26,7 @@ const props = defineProps<Props>();
 		:dismiss-permanently="props.dismissPermanently ?? false"
 	>
 		<template #mainContent>
-			<N8nMarkdown :content="props.content" :class="$style.markdown" />
+			<N8nMarkdown :content="displayContent" :class="$style.markdown" />
 		</template>
 	</BaseBanner>
 </template>
