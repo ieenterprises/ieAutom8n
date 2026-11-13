@@ -43,4 +43,4 @@ jobs:
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           export IMAGE_BASE_NAME="ghcr.io/${OWNER}/ieautom8n"
           export IMAGE_TAG="latest"
-          docker buildx bake --push n8n
+          docker buildx bake -f docker/docker-bake.hcl --push n8n

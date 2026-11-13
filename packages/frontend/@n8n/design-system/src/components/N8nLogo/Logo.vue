@@ -38,19 +38,9 @@ const containerClasses = computed(() => {
 	];
 });
 
-const svg = useTemplateRef<{ $el: Element }>('logo');
+const logoRef = useTemplateRef<HTMLImageElement>('logo');
 onMounted(() => {
-	if (releaseChannel !== 'dev' || !('createObjectURL' in URL)) {
-		return;
-	}
-
-	const logoEl = svg.value!.$el;
-
-	/** Reuse the SVG as the favicon. These must use HEX values. */
-	const hexColor = '#898989';
-	const faviconSvg = logoEl.outerHTML.replace('>', `><style>path { fill: ${hexColor}; }</style>`);
-	const blob = new Blob([faviconSvg], { type: 'image/svg+xml' });
-	useFavicon(URL.createObjectURL(blob));
+	// No-op for favicon override
 });
 </script>
 
