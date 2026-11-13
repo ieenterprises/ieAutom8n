@@ -55,6 +55,8 @@ ARG IMAGE_DESCRIPTION="Workflow Automation Tool"
 ENV NODE_ENV=production
 ENV N8N_RELEASE_TYPE=${N8N_RELEASE_TYPE}
 ENV SHELL=/bin/sh
+ENV NODE_OPTIONS="--max-old-space-size=400"
+ENV EXECUTIONS_PROCESS="main"
 # Restrict GraphicsMagick to its commonly used coder set.
 ENV MAGICK_CODER_STABILITY=PRIMARY
 
