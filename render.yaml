@@ -1,8 +1,9 @@
 services:
   - type: web
     name: ieautom8n
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    env: image
+    image:
+      url: ghcr.io/ieenterprises/ieautom8n:latest
     plan: starter
     region: oregon
     disk:
@@ -22,5 +23,3 @@ services:
         value: "true"
       - key: EXECUTIONS_DATA_MAX_AGE
         value: "168"
-      - key: EXTERNAL_FRONTEND_HOOKS_URLS
-        value: "/static/branding.js"

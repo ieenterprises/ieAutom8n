@@ -56,8 +56,13 @@ onMounted(() => {
 
 <template>
 	<div :class="containerClasses" data-test-id="n8n-logo">
-		<LogoIcon ref="logo" :class="[$style.logo, { [$style.dev]: releaseChannel === 'dev' }]" />
-		<LogoText v-if="showLogoText" :class="$style.logoText" />
+		<img
+			ref="logo"
+			src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png"
+			alt="ieAutom8n Logo"
+			:class="[$style.logoImg, { [$style.dev]: releaseChannel === 'dev' }]"
+		/>
+		<span v-if="showLogoText" :class="$style.logoBrandText">ieAutom8n</span>
 		<slot />
 	</div>
 </template>
@@ -72,34 +77,38 @@ onMounted(() => {
 }
 
 .logo,
-.logoText {
+.logoText,
+.logoImg {
 	width: auto;
 	height: var(--height--3xs);
 	max-width: 100%;
 }
 
-.logo {
-	--logo-icon-fill: var(--background--brand);
-
-	&.dev {
-		--logo-icon-fill: var(--text-color--subtler);
-	}
-
-	path {
-		fill: var(--logo-icon-fill);
-	}
+.logoImg {
+	border-radius: 50%;
+	object-fit: contain;
 }
 
-.logoText path {
-	fill: var(--text-color);
+.logoBrandText {
+	font-family: inherit;
+	font-size: 1.25rem;
+	font-weight: 800;
+	letter-spacing: -0.5px;
+	color: var(--text-color, #1a1a1a);
+	white-space: nowrap;
 }
 
 .large {
 	margin-bottom: var(--spacing--xl);
 
 	.logo,
-	.logoText {
+	.logoText,
+	.logoImg {
 		height: var(--height--2xs);
+	}
+
+	.logoBrandText {
+		font-size: 1.6rem;
 	}
 }
 </style>

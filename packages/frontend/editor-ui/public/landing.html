@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ieAutom8n - Next-Gen Workflow Automation</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ff6d5a;
+      --primary-hover: #ff523b;
+      --dark: #0f172a;
+      --gray-900: #1e293b;
+      --gray-600: #475569;
+      --gray-100: #f1f5f9;
+      --white: #ffffff;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    body {
+      background-color: #fafbfc;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--dark);
+      font-weight: 800;
+      font-size: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .btn {
+      padding: 0.65rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--white);
+      box-shadow: 0 4px 14px rgba(255, 109, 90, 0.35);
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--gray-600);
+      border: 1px solid #cbd5e1;
+    }
+    .btn-secondary:hover {
+      color: var(--dark);
+      border-color: var(--dark);
+    }
+    .hero {
+      max-width: 1100px;
+      margin: 4rem auto 5rem;
+      text-align: center;
+      padding: 0 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      background: rgba(255, 109, 90, 0.1);
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.5rem;
+      color: var(--dark);
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #ff6d5a 0%, #ff8e53 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--gray-600);
+      max-width: 720px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-lg {
+      padding: 0.9rem 2rem;
+      font-size: 1.05rem;
+    }
+    .features {
+      max-width: 1200px;
+      margin: 0 auto 6rem;
+      padding: 0 1.5rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+    .card {
+      background: var(--white);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      border-radius: 16px;
+      padding: 2.25rem;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.08);
+    }
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: rgba(255, 109, 90, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+    }
+    .card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--dark);
+    }
+    .card p {
+      color: var(--gray-600);
+      font-size: 0.95rem;
+    }
+    .cta-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: var(--white);
+      max-width: 1100px;
+      margin: 0 auto 6rem;
+      border-radius: 24px;
+      padding: 4rem 2rem;
+      text-align: center;
+      position: relative;
+    }
+    .cta-banner h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .cta-banner p {
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      font-size: 1.1rem;
+    }
+    footer {
+      border-top: 1px solid #e2e8f0;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .navbar { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="/static/landing.html" class="brand">
+      <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieAutom8n Logo" class="brand-logo">
+      <span>ieAutom8n</span>
+    </a>
+    <div class="nav-links">
+      <a href="/signin?app=1" class="btn btn-secondary">Sign In</a>
+      <a href="/setup?app=1" class="btn btn-primary">Sign Up (Launch)</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="badge">🚀 Enterprise Workflow Orchestration</div>
+    <h1>Automate Every Task with <span>ieAutom8n</span></h1>
+    <p>Build enterprise-grade AI automations, connect your databases and APIs, and streamline your business operations securely in one place.</p>
+    <div class="hero-actions">
+      <a href="/setup?app=1" class="btn btn-primary btn-lg">Sign Up (Launch Workspace)</a>
+      <a href="/signin?app=1" class="btn btn-secondary btn-lg">Sign In to Account</a>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="features">
+    <div class="features-grid">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Visual Drag-and-Drop</h3>
+        <p>Design multi-branch logic, conditional routing, and automated business workflows on an intuitive canvas.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>Autonomous AI Agents</h3>
+        <p>Deploy state-of-the-art LLMs (OpenAI, Claude, Gemini) equipped with tools, memory, and reasoning.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3>400+ Enterprise Apps</h3>
+        <p>Connect natively with Google Workspace, Slack, HubSpot, Postgres, Shopify, and custom REST API webhooks.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="cta-banner">
+    <h2>Ready to Supercharge Your Business?</h2>
+    <p>Scale your operational productivity with self-hosted, private workflow intelligence.</p>
+    <a href="/setup?app=1" class="btn btn-primary btn-lg" style="box-shadow: 0 4px 20px rgba(255, 109, 90, 0.5);">Open Your ieAutom8n Workspace</a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2026 ieEnterprises. All rights reserved. Powered by ieAutom8n.</p>
+  </footer>
+
+</body>
+</html>
