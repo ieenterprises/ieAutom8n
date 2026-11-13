@@ -1,4 +1,8 @@
 #!/bin/sh
+if [ -n "$PORT" ] && [ -z "$N8N_PORT" ]; then
+  export N8N_PORT="$PORT"
+fi
+
 if [ -d /opt/custom-certificates ]; then
   echo "Trusting custom certificates from /opt/custom-certificates."
   export NODE_OPTIONS="--use-openssl-ca $NODE_OPTIONS"
