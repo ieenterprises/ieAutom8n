@@ -61,7 +61,7 @@ ENV MAGICK_CODER_STABILITY=PRIMARY
 WORKDIR /home/node
 
 COPY --link ./compiled /usr/local/lib/node_modules/n8n
-COPY --link docker/images/n8n/docker-entrypoint.sh /
+COPY --chmod=755 docker/images/n8n/docker-entrypoint.sh /
 
 # Do not use --link here. These destinations are pnpm symlinks. A --link copy
 # resolves the destination against an empty root. It replaces the symlink with
@@ -92,6 +92,7 @@ RUN set -e; \
     ln -s "$N8N/bin/n8n" /usr/local/bin/n8n; \
     mkdir -p /home/node/.n8n; \
     chown -R node:node /home/node; \
+    chmod +x /docker-entrypoint.sh; \
     rm -rf /root/.npm /tmp/*
 
 EXPOSE 5678/tcp
