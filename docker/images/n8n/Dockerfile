@@ -57,6 +57,8 @@ ENV N8N_RELEASE_TYPE=${N8N_RELEASE_TYPE}
 ENV SHELL=/bin/sh
 ENV NODE_OPTIONS="--max-old-space-size=400"
 ENV EXECUTIONS_PROCESS="main"
+ENV N8N_RUNNERS_MODE="external"
+ENV N8N_RUNNERS_AUTH_TOKEN="ieautom8n-auth-token"
 # Restrict GraphicsMagick to its commonly used coder set.
 ENV MAGICK_CODER_STABILITY=PRIMARY
 
