@@ -10,6 +10,8 @@ jobs:
   build-and-publish:
     name: Build & Publish Custom ieAutom8n
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: '--max-old-space-size=7168'
     permissions:
       contents: read
       packages: write
@@ -18,16 +20,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Setup Node.js, pnpm, and Build Monorepo
+        uses: ./.github/actions/setup-nodejs
         with:
-          version: 12.4.2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
+          build-command: pnpm build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -39,18 +35,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build Application Packages
-        run: pnpm build
-
       - name: Prepare Production Deployment
         run: node scripts/build-n8n.mjs
 
       - name: Build and Push Docker Image
         run: |
-          # Lowercase the repository owner for docker image naming
           OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           export IMAGE_BASE_NAME="ghcr.io/${OWNER}/ieautom8n"
           export IMAGE_TAG="latest"
