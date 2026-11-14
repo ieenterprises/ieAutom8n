@@ -309,6 +309,7 @@ async function credentialData(id: string | null | undefined): Promise<unknown> {
 function modelProviderForCredentialType(type: string): InstanceAiModelProvider {
 	if (type === 'anthropicApi') return 'anthropic';
 	if (type === 'openRouterApi') return 'openrouter';
+	if (type === 'googlePalmApi') return 'google';
 	return 'openai';
 }
 
@@ -501,6 +502,7 @@ function modelConnection(): InstanceAiConnectionUpdate {
 	const data: Record<string, unknown> = {};
 	if (modelApiKey.value.trim()) data.apiKey = modelApiKey.value.trim();
 	if (modelProvider.value === 'custom') data.url = modelBaseUrl.value.trim();
+	if (modelProvider.value === 'google') data.host = 'https://generativelanguage.googleapis.com';
 	return { type: modelConfig.value.credentialType, data };
 }
 

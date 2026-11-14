@@ -21,6 +21,7 @@ function emptyCatalogResponse(): InstanceAiModelCatalogResponse {
 			anthropic: [],
 			openai: [],
 			openrouter: [],
+			google: [],
 		},
 	};
 }

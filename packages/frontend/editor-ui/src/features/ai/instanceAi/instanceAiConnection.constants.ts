@@ -6,12 +6,13 @@ import type {
 
 import { SANDBOX_PROVIDER_LABELS } from './constants';
 
-export type InstanceAiModelProvider = 'anthropic' | 'openai' | 'openrouter' | 'custom';
+export type InstanceAiModelProvider = 'anthropic' | 'openai' | 'google' | 'openrouter' | 'custom';
 export type InstanceAiSearchProvider = 'searxng' | 'brave' | 'disabled';
 
 export const INSTANCE_AI_CURATED_MODELS = {
 	anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5'],
 	openai: ['gpt-6.1-sol', 'gpt-6-astra'],
+	google: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
 	// OpenRouter uses dotted versions for Claude (`claude-opus-5.5`, not `claude-opus-5-5`).
 	openrouter: [
 		'anthropic/claude-opus-5.5',
@@ -35,6 +36,12 @@ export const INSTANCE_AI_MODEL_PROVIDERS = [
 		credentialType: 'openAiApi',
 		label: 'OpenAI',
 		placeholder: 'sk-…',
+	},
+	{
+		id: 'google',
+		credentialType: 'googlePalmApi',
+		label: 'Google Gemini',
+		placeholder: 'AIzaSy…',
 	},
 	{
 		id: 'openrouter',
