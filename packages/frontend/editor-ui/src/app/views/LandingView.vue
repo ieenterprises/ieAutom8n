@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { VIEWS } from '@/app/constants';
 import { useDocumentTitle } from '@/app/composables/useDocumentTitle';
-import { onMounted } from 'vue';
+import { useSettingsStore } from '@n8n/stores/settings.store';
+import { computed, onMounted } from 'vue';
 
 const documentTitle = useDocumentTitle();
+const settingsStore = useSettingsStore();
+
+const getStartedRoute = computed(() => {
+	if (settingsStore.showSetupPage) {
+		return { name: VIEWS.SETUP };
+	}
+	return { name: VIEWS.SIGNUP };
+});
 
 onMounted(() => {
 	documentTitle.set('ieAutom8n — Enterprise Automation Platform by ieEnterprises');
@@ -50,7 +59,7 @@ onMounted(() => {
 					<router-link :to="{ name: VIEWS.SIGNIN }" class="btn-signin">
 						Sign In
 					</router-link>
-					<router-link :to="{ name: VIEWS.SIGNUP }" class="btn-signup">
+					<router-link :to="getStartedRoute" class="btn-signup">
 						<span>Get Started</span>
 						<svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -80,7 +89,7 @@ onMounted(() => {
 
 				<!-- Hero CTA Buttons -->
 				<div class="hero-cta-group">
-					<router-link :to="{ name: VIEWS.SIGNUP }" class="btn-hero-primary">
+					<router-link :to="getStartedRoute" class="btn-hero-primary">
 						<span>Get Started Free</span>
 						<svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -317,7 +326,7 @@ onMounted(() => {
 						<li>✓ 400+ Pre-built Integrations</li>
 						<li>✓ Community Support</li>
 					</ul>
-					<router-link :to="{ name: VIEWS.SIGNUP }" class="btn-plan-secondary">
+					<router-link :to="getStartedRoute" class="btn-plan-secondary">
 						Get Started Free
 					</router-link>
 				</div>
@@ -433,7 +442,7 @@ onMounted(() => {
 					Start building resilient, AI-powered automated workflows today with ieEnterprises.
 				</p>
 				<div class="final-cta-buttons">
-					<router-link :to="{ name: VIEWS.SIGNUP }" class="btn-hero-primary">
+					<router-link :to="getStartedRoute" class="btn-hero-primary">
 						Get Started Free
 					</router-link>
 					<router-link :to="{ name: VIEWS.SIGNIN }" class="btn-hero-secondary">
@@ -462,7 +471,7 @@ onMounted(() => {
 					<a href="#solutions">Solutions</a>
 					<a href="#pricing">Pricing</a>
 					<router-link :to="{ name: VIEWS.SIGNIN }">Sign In</router-link>
-					<router-link :to="{ name: VIEWS.SIGNUP }">Sign Up</router-link>
+					<router-link :to="getStartedRoute">Sign Up</router-link>
 					<a href="mailto:ieenterprises.ai@gmail.com">Support</a>
 				</div>
 

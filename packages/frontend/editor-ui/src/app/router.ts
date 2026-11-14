@@ -167,11 +167,8 @@ export const routes: RouteRecordRaw[] = [
 		name: 'landing',
 		component: LandingView,
 		beforeEnter: (_to, _from, next) => {
-			const settingsStore = useSettingsStore();
-			if (settingsStore.showSetupPage) {
-				return next({ name: VIEWS.SETUP });
-			}
 			if (isAuthenticated()) {
+				const settingsStore = useSettingsStore();
 				const instanceAiSettings = settingsStore.moduleSettings['instance-ai'];
 				if (
 					settingsStore.isModuleActive('instance-ai') &&
@@ -1258,7 +1255,7 @@ router.beforeEach(async (to: RouteLocationNormalized, from, next) => {
 
 		const settingsStore = useSettingsStore();
 		if (settingsStore.showSetupPage) {
-			if (to.name === VIEWS.SETUP) {
+			if (to.name === VIEWS.SETUP || to.name === 'landing') {
 				return next();
 			}
 
