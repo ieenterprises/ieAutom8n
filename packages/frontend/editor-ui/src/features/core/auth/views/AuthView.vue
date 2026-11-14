@@ -44,6 +44,9 @@ const {
 
 <template>
 	<div :class="$style.container">
+		<router-link to="/" :class="$style.backLink">
+			<span :class="$style.backArrow">←</span> Back to Home
+		</router-link>
 		<N8nLogo size="large" :release-channel="releaseChannel" />
 		<div :class="$style.textContainer">
 			<N8nText size="medium" color="text-light">
@@ -81,11 +84,42 @@ body {
 	display: flex;
 	align-items: center;
 	flex-direction: column;
-	padding-top: var(--spacing--2xl);
+	padding-top: var(--spacing--xl);
 
 	> * {
 		width: 352px;
 	}
+}
+
+.backLink {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: auto !important;
+	font-size: var(--font-size--xs, 12px);
+	font-weight: var(--font-weight--bold, 600);
+	color: #64748b;
+	text-decoration: none;
+	margin-bottom: var(--spacing--sm);
+	padding: 6px 14px;
+	border-radius: 9999px;
+	background-color: #ffffff;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	transition: all 0.2s ease;
+
+	&:hover {
+		color: #7c3aed;
+		border-color: #8b5cf6;
+		background-color: #f5f3ff;
+		transform: translateX(-2px);
+	}
+}
+
+.backArrow {
+	font-size: 14px;
+	transition: transform 0.2s ease;
 }
 
 .textContainer {
