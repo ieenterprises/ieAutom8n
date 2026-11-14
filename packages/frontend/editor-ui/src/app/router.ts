@@ -33,7 +33,9 @@ import {
 	canManageInstanceAi,
 	canMessageInstanceAi,
 } from '@/features/ai/instanceAi/instanceAiPermissions';
+import { isAuthenticated } from '@/app/utils/rbac/checks';
 
+const LandingView = async () => await import('@/app/views/LandingView.vue');
 const ChangePasswordView = async () =>
 	await import('@/features/core/auth/views/ChangePasswordView.vue');
 const ConfirmEmailChangeView = async () =>
@@ -162,25 +164,29 @@ const allowResourceCenterRoute = (
 export const routes: RouteRecordRaw[] = [
 	{
 		path: '/',
-		// Stub component — beforeEnter always navigates away, so it is never rendered.
-		// Required because vue-router resolves `redirect` before guards run, and we need
-		// stores populated by `initializeCore` to decide where to send the user.
-		component: { render: () => null },
+		name: 'landing',
+		component: LandingView,
 		beforeEnter: (_to, _from, next) => {
 			const settingsStore = useSettingsStore();
-			const instanceAiSettings = settingsStore.moduleSettings['instance-ai'];
-			if (
-				settingsStore.isModuleActive('instance-ai') &&
-				instanceAiSettings?.enabled !== false &&
-				(instanceAiSettings?.setupCompleted === true || canManageInstanceAi()) &&
-				canMessageInstanceAi()
-			) {
-				return next({ name: INSTANCE_AI_VIEW });
+			if (settingsStore.showSetupPage) {
+				return next({ name: VIEWS.SETUP });
 			}
-			next('/home/workflows');
+			if (isAuthenticated()) {
+				const instanceAiSettings = settingsStore.moduleSettings['instance-ai'];
+				if (
+					settingsStore.isModuleActive('instance-ai') &&
+					instanceAiSettings?.enabled !== false &&
+					(instanceAiSettings?.setupCompleted === true || canManageInstanceAi()) &&
+					canMessageInstanceAi()
+				) {
+					return next({ name: INSTANCE_AI_VIEW });
+				}
+				return next('/home/workflows');
+			}
+			next();
 		},
 		meta: {
-			middleware: ['authenticated'],
+			layout: 'auth',
 		},
 	},
 	{
