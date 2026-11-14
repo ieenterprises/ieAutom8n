@@ -101,4 +101,21 @@ onMounted(() => {
 		font-size: 1.6rem;
 	}
 }
+
+.sidebar {
+	gap: 6px;
+	justify-content: flex-start;
+
+	.logoImg {
+		width: 18px;
+		height: 18px;
+		min-width: 18px;
+	}
+
+	.logoBrandText {
+		font-size: 0.85rem;
+		font-weight: 700;
+		letter-spacing: -0.2px;
+	}
+}
 </style>

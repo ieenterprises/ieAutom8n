@@ -292,8 +292,7 @@ function handleLinkClick(event: MouseEvent) {
 	img {
 		position: relative;
 		left: 1px;
-		height: 20px;
-		margin-right: auto;
+		height: 18px;
 	}
 
 	&.collapsed {
