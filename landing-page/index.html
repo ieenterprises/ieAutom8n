@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ieAutom8n — Next-Gen AI & Workflow Automation by ieEnterprises</title>
+  <meta name="description" content="Build powerful event-driven workflows, connect 400+ apps, and deploy intelligent AI agents on a secure, enterprise-grade cloud platform.">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+              950: '#2e1065',
+            },
+            dark: {
+              bg: '#090D16',
+              surface: '#111827',
+              card: '#161F30',
+              border: '#1F293D',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Background subtle grid pattern */
+    .bg-grid-pattern {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+    .purple-glow {
+      box-shadow: 0 0 50px -10px rgba(139, 92, 246, 0.35);
+    }
+    .purple-glow-sm {
+      box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.4);
+    }
+    .text-glow {
+      text-shadow: 0 0 20px rgba(167, 139, 250, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-dark-bg text-slate-100 font-sans antialiased overflow-x-hidden selection:bg-brand-500 selection:text-white">
+
+  <!-- Ambient Glow Orbs in Background -->
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none -z-10 overflow-hidden">
+    <div class="absolute -top-40 left-1/4 w-[500px] h-[500px] bg-brand-600/20 rounded-full blur-[140px] animate-pulse-slow"></div>
+    <div class="absolute -top-20 right-1/4 w-[450px] h-[450px] bg-purple-900/25 rounded-full blur-[130px]"></div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-dark-bg/80 border-b border-dark-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="relative w-10 h-10 rounded-xl bg-brand-950 border border-brand-500/30 flex items-center justify-center p-1.5 shadow-lg group-hover:border-brand-400 transition-all">
+          <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieAutom8n Logo" class="w-full h-full object-contain">
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+            ieAutom8n
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-400">by ieEnterprises</span>
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#features" class="hover:text-brand-400 transition-colors">Features</a>
+        <a href="#solutions" class="hover:text-brand-400 transition-colors">Solutions</a>
+        <a href="#canvas-preview" class="hover:text-brand-400 transition-colors">Workflow Canvas</a>
+        <a href="#pricing" class="hover:text-brand-400 transition-colors">Pricing</a>
+        <a href="#faq" class="hover:text-brand-400 transition-colors">FAQ</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="https://ieautom8n-latest.onrender.com/signin" target="_blank" class="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white transition-colors">
+          Sign In
+        </a>
+        <a href="https://ieautom8n-latest.onrender.com/signin" target="_blank" class="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 rounded-xl shadow-lg purple-glow-sm hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2">
+          <span>Launch App</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden bg-grid-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+      
+      <!-- Pill Tag -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs sm:text-sm font-semibold mb-8 backdrop-blur-md">
+        <span class="w-2 h-2 rounded-full bg-brand-400 animate-ping"></span>
+        <span>Next-Generation Workflow Automation & AI Orchestration</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-[1.15]">
+        Automate Without Limits. <br>
+        <span class="bg-gradient-to-r from-brand-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent text-glow">
+          Powered by ieAutom8n.
+        </span>
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto font-normal leading-relaxed">
+        Connect over 400+ applications, deploy self-healing autonomous AI agents, and build complex mission-critical workflows with zero infrastructure overhead.
+      </p>
+
+      <!-- Hero CTA Buttons -->
+      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="https://ieautom8n-latest.onrender.com/signin" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-bold text-white bg-gradient-to-r from-brand-600 via-purple-600 to-brand-500 hover:from-brand-500 hover:to-purple-500 shadow-xl purple-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+          <span>Get Started Free</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </a>
+        <a href="#canvas-preview" class="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold text-slate-300 bg-dark-card/80 hover:bg-dark-card border border-dark-border hover:border-brand-500/50 hover:text-white transition-all flex items-center justify-center gap-2">
+          <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Explore Workflow Canvas</span>
+        </a>
+      </div>
+
+      <!-- Trust Badges -->
+      <div class="mt-12 pt-8 border-t border-dark-border/60 flex flex-wrap items-center justify-center gap-8 sm:gap-14 text-slate-400 text-xs sm:text-sm font-medium">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <span>PostgreSQL Persistent Storage</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <span>End-to-End Encryption</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <span>400+ Enterprise Connectors</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Workflow Canvas Mockup -->
+  <section id="canvas-preview" class="py-16 relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Mockup Window Container -->
+      <div class="rounded-2xl border border-dark-border bg-dark-card shadow-2xl purple-glow overflow-hidden">
+        
+        <!-- Window Header Bar -->
+        <div class="px-5 py-3.5 bg-dark-surface border-b border-dark-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+            <span class="ml-3 text-xs font-mono text-slate-400">ieAutom8n Studio — [Lead Triage & AI Agent Pipeline]</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live & Active
+            </span>
+            <button class="px-3 py-1 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-semibold transition">Execute Workflow</button>
+          </div>
+        </div>
+
+        <!-- Canvas Body (Node Diagram Visual) -->
+        <div class="p-8 sm:p-12 relative min-h-[420px] flex flex-col md:flex-row items-center justify-between gap-6 overflow-x-auto bg-[#0A0E17] bg-grid-pattern">
+          
+          <!-- Node 1: Webhook Trigger -->
+          <div class="w-64 bg-dark-surface/90 border border-dark-border hover:border-brand-500 rounded-xl p-4 shadow-lg backdrop-blur transition-all animate-float">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center font-bold text-xs">⚡</div>
+              <div>
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Trigger</h4>
+                <p class="text-sm font-semibold text-slate-200">Webhook (Inbound Lead)</p>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 border-t border-dark-border pt-2 flex items-center justify-between">
+              <span>Event: POST /leads</span>
+              <span class="text-emerald-400 font-mono">200 OK</span>
+            </div>
+          </div>
+
+          <!-- Connector 1 -->
+          <div class="hidden md:flex items-center justify-center">
+            <div class="w-12 h-0.5 bg-gradient-to-r from-brand-500 to-purple-400 relative">
+              <div class="absolute -top-1 right-0 w-2 h-2 rounded-full bg-brand-400 animate-ping"></div>
+            </div>
+          </div>
+
+          <!-- Node 2: AI Agent & LLM -->
+          <div class="w-64 bg-dark-surface/90 border-2 border-brand-500 rounded-xl p-4 shadow-xl purple-glow-sm backdrop-blur transition-all">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-brand-600/30 text-brand-300 flex items-center justify-center font-bold text-xs">🤖</div>
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-400">AI Logic</span>
+                <p class="text-sm font-semibold text-white">Autonomous Agent</p>
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-300 mb-2">Model: Claude 3.5 / GPT-4o<br>Task: Score lead & extract intent</p>
+            <div class="text-[11px] text-brand-300 border-t border-dark-border pt-2 flex items-center justify-between font-mono">
+              <span>Status: Scored (High)</span>
+              <span>0.34s</span>
+            </div>
+          </div>
+
+          <!-- Connector 2 -->
+          <div class="hidden md:flex items-center justify-center">
+            <div class="w-12 h-0.5 bg-gradient-to-r from-purple-400 to-emerald-400 relative"></div>
+          </div>
+
+          <!-- Node 3: PostgreSQL Database -->
+          <div class="w-64 bg-dark-surface/90 border border-dark-border hover:border-brand-500 rounded-xl p-4 shadow-lg backdrop-blur transition-all">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">🗄️</div>
+              <div>
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Database</h4>
+                <p class="text-sm font-semibold text-slate-200">PostgreSQL (ieAutom8n)</p>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 border-t border-dark-border pt-2 flex items-center justify-between">
+              <span>Upsert Table: leads</span>
+              <span class="text-emerald-400 font-mono">Saved</span>
+            </div>
+          </div>
+
+          <!-- Connector 3 -->
+          <div class="hidden md:flex items-center justify-center">
+            <div class="w-12 h-0.5 bg-gradient-to-r from-emerald-400 to-indigo-400 relative"></div>
+          </div>
+
+          <!-- Node 4: Slack & Email Notification -->
+          <div class="w-64 bg-dark-surface/90 border border-dark-border hover:border-brand-500 rounded-xl p-4 shadow-lg backdrop-blur transition-all animate-float">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">💬</div>
+              <div>
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Notification</h4>
+                <p class="text-sm font-semibold text-slate-200">Slack & Email Alert</p>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 border-t border-dark-border pt-2 flex items-center justify-between">
+              <span>Channel: #sales-alerts</span>
+              <span class="text-emerald-400 font-mono">Delivered</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Core Features Section -->
+  <section id="features" class="py-24 bg-dark-bg relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Unmatched Capabilities</h2>
+        <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Everything You Need to Automate at Scale</p>
+        <p class="mt-4 text-base text-slate-400">ieAutom8n gives your team enterprise-grade flexibility with no hidden fees or arbitrary usage ceilings.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Feature 1 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Native AI Agents & LLMs</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Integrate OpenAI, Anthropic, Gemini, and open-source models directly into your workflows. Build agents with memory, vector databases, and custom tool calling.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">PostgreSQL Powered</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Backed by a high-performance PostgreSQL database for resilient state, transaction reliability, and permanent workflow storage that never disappears.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Zero-Trust Credential Security</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            All OAuth tokens, database connection secrets, and private API keys are encrypted at rest with military-grade 256-bit encryption keys.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">JavaScript & Python Execution</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Don't get trapped in rigid no-code boxes. Write standard code blocks, process JSON structures, regex strings, and execute custom algorithms with full control.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Multi-User Collaboration & RBAC</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Invite teammates, grant role-based scopes (Admin, Member, Editor), share projects, and collaborate safely without sharing sensitive credentials.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="p-8 rounded-2xl bg-dark-card border border-dark-border hover:border-brand-500/50 hover:purple-glow-sm transition-all group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Custom ieAutom8n API</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Trigger workflows, manage users, and deploy workflows programmatically via the integrated ieAutom8n REST API and secure API keys.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Solutions Section -->
+  <section id="solutions" class="py-24 bg-dark-surface/50 border-y border-dark-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Tailored Automation</h2>
+        <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Built for Every Department</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <div class="p-6 rounded-xl bg-dark-card border border-dark-border">
+          <div class="text-2xl mb-3">📈</div>
+          <h4 class="text-lg font-bold text-white mb-2">Marketing & Sales</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Automate lead capture, enrich company data, schedule CRM syncs, and trigger targeted email notifications automatically.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl bg-dark-card border border-dark-border">
+          <div class="text-2xl mb-3">🛠️</div>
+          <h4 class="text-lg font-bold text-white mb-2">DevOps & Cloud</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Monitor infrastructure health, catch webhook alerts, trigger CI/CD jobs, and sync GitHub issues with your team chats.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl bg-dark-card border border-dark-border">
+          <div class="text-2xl mb-3">🤝</div>
+          <h4 class="text-lg font-bold text-white mb-2">Customer Success</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Auto-triage inbound support tickets using AI, draft contextual responses, and escalate urgent issues without delay.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl bg-dark-card border border-dark-border">
+          <div class="text-2xl mb-3">📊</div>
+          <h4 class="text-lg font-bold text-white mb-2">Finance & Ops</h4>
+          <p class="text-slate-400 text-xs leading-relaxed">
+            Extract invoice data automatically, sync Stripe receipts to QuickBooks, and generate weekly recurring performance digests.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Transparent Pricing Section -->
+  <section id="pricing" class="py-24 bg-dark-bg relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Predictable Pricing</h2>
+        <p class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Flexible Plans for Every Stage</p>
+        <p class="mt-4 text-base text-slate-400">Deploy on our managed cloud or have ieEnterprises build custom workflows for you.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Plan 1 -->
+        <div class="rounded-2xl p-8 bg-dark-card border border-dark-border flex flex-col justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white">Starter</h3>
+            <p class="text-slate-400 text-xs mt-1">For individuals and founders automating initial processes.</p>
+            <div class="mt-6 flex items-baseline gap-2">
+              <span class="text-4xl font-extrabold text-white">Free</span>
+              <span class="text-slate-400 text-xs">/ self-hosted</span>
+            </div>
+            <ul class="mt-8 space-y-4 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Full ieAutom8n Workflow Canvas</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>400+ Standard Integrations</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Community Support</span>
+              </li>
+            </ul>
+          </div>
+          <a href="https://ieautom8n-latest.onrender.com/signin" target="_blank" class="mt-8 w-full py-3 text-center rounded-xl font-semibold text-slate-200 bg-dark-border hover:bg-slate-700 transition">
+            Launch Free
+          </a>
+        </div>
+
+        <!-- Plan 2 (Highlighted) -->
+        <div class="rounded-2xl p-8 bg-dark-card border-2 border-brand-500 relative flex flex-col justify-between purple-glow shadow-2xl">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-brand-500 text-white text-[11px] font-bold uppercase tracking-wider">
+            Most Popular
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Professional</h3>
+            <p class="text-slate-400 text-xs mt-1">For growing teams requiring persistent cloud reliability.</p>
+            <div class="mt-6 flex items-baseline gap-2">
+              <span class="text-4xl font-extrabold text-white">$49</span>
+              <span class="text-slate-400 text-xs">/ month</span>
+            </div>
+            <ul class="mt-8 space-y-4 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Managed PostgreSQL Storage</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Automated Email Password Reset (SMTP)</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Unlimited Workflow Executions</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Priority Email Support by ieEnterprises</span>
+              </li>
+            </ul>
+          </div>
+          <a href="mailto:ieenterprises.ai@gmail.com?subject=Inquiry%20about%20ieAutom8n%20Professional" class="mt-8 w-full py-3 text-center rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 shadow-lg purple-glow-sm transition">
+            Contact ieEnterprises
+          </a>
+        </div>
+
+        <!-- Plan 3 -->
+        <div class="rounded-2xl p-8 bg-dark-card border border-dark-border flex flex-col justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white">Enterprise</h3>
+            <p class="text-slate-400 text-xs mt-1">For mission-critical operations needing custom engineering.</p>
+            <div class="mt-6 flex items-baseline gap-2">
+              <span class="text-4xl font-extrabold text-white">Custom</span>
+            </div>
+            <ul class="mt-8 space-y-4 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Bespoke Workflow & Node Development</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Dedicated Enterprise Database Cluster</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Custom Domain & Single Sign-On (SSO)</span>
+              </li>
+              <li class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span>Dedicated Solutions Architect & SLA</span>
+              </li>
+            </ul>
+          </div>
+          <a href="mailto:ieenterprises.ai@gmail.com?subject=Enterprise%20Inquiry%20for%20ieAutom8n" class="mt-8 w-full py-3 text-center rounded-xl font-semibold text-slate-200 bg-dark-border hover:bg-slate-700 transition">
+            Talk to Founders
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="py-24 bg-dark-surface/30 border-t border-dark-border">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="text-center mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-brand-400 mb-2">Got Questions?</h2>
+        <p class="text-3xl font-extrabold text-white tracking-tight">Frequently Asked Questions</p>
+      </div>
+
+      <div class="space-y-4">
+        
+        <details class="group rounded-xl bg-dark-card border border-dark-border p-6 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-white">
+            <span>What makes ieAutom8n different from generic automation tools?</span>
+            <span class="text-brand-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-sm text-slate-400 leading-relaxed">
+            ieAutom8n combines intuitive drag-and-drop workflow building with full code flexibility (JavaScript/Python) and native autonomous AI agents. Unlike rigid platforms, you have full ownership of your data with dedicated PostgreSQL persistence.
+          </p>
+        </details>
+
+        <details class="group rounded-xl bg-dark-card border border-dark-border p-6 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-white">
+            <span>Where is my data stored and is it secure?</span>
+            <span class="text-brand-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-sm text-slate-400 leading-relaxed">
+            Your data is stored in your dedicated PostgreSQL database with encrypted credentials. ieAutom8n uses 256-bit encryption for all stored API tokens and environment secrets.
+          </p>
+        </details>
+
+        <details class="group rounded-xl bg-dark-card border border-dark-border p-6 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-white">
+            <span>Can users reset their password if they forget it?</span>
+            <span class="text-brand-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-sm text-slate-400 leading-relaxed">
+            Yes! With automated SMTP email enabled, users can click "Forgot password?" on the login screen to receive a secure password reset link directly to their inbox. Admins can also reset passwords directly via the admin console.
+          </p>
+        </details>
+
+        <details class="group rounded-xl bg-dark-card border border-dark-border p-6 [&_summary::-webkit-details-marker]:hidden">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-white">
+            <span>Can ieEnterprises build custom workflows for my business?</span>
+            <span class="text-brand-400 group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <p class="mt-4 text-sm text-slate-400 leading-relaxed">
+            Yes, our engineering team at ieEnterprises builds custom automations, bespoke nodes, and tailored AI pipelines for clients. Contact us directly at <a href="mailto:ieenterprises.ai@gmail.com" class="text-brand-400 underline">ieenterprises.ai@gmail.com</a>.
+          </p>
+        </details>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Big Final CTA Banner -->
+  <section class="py-20 relative overflow-hidden bg-grid-pattern">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <div class="rounded-3xl p-10 sm:p-16 bg-gradient-to-b from-brand-950/80 to-dark-card border border-brand-500/40 purple-glow">
+        <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          Ready to Automate with <br>
+          <span class="bg-gradient-to-r from-brand-400 to-purple-300 bg-clip-text text-transparent">ieAutom8n?</span>
+        </h2>
+        <p class="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto">
+          Start building resilient, AI-powered automated workflows today with ieEnterprises.
+        </p>
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="https://ieautom8n-latest.onrender.com/signin" target="_blank" class="px-8 py-4 rounded-xl text-base font-bold text-white bg-brand-600 hover:bg-brand-500 shadow-xl purple-glow hover:scale-[1.02] active:scale-[0.98] transition-all">
+            Launch ieAutom8n Studio
+          </a>
+          <a href="mailto:ieenterprises.ai@gmail.com" class="px-8 py-4 rounded-xl text-base font-semibold text-slate-200 bg-dark-surface hover:bg-dark-border border border-dark-border transition">
+            Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 bg-dark-bg border-t border-dark-border text-slate-400 text-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <div class="flex items-center gap-3">
+        <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieEnterprises" class="w-7 h-7 object-contain">
+        <span class="font-bold text-white">ieAutom8n</span>
+        <span>— Enterprise Automation Platform</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a href="#features" class="hover:text-slate-200 transition">Features</a>
+        <a href="#solutions" class="hover:text-slate-200 transition">Solutions</a>
+        <a href="#pricing" class="hover:text-slate-200 transition">Pricing</a>
+        <a href="mailto:ieenterprises.ai@gmail.com" class="hover:text-brand-400 transition">Support</a>
+      </div>
+
+      <div class="text-xs text-slate-500">
+        © 2026 ieEnterprises. All rights reserved.
+      </div>
+
+    </div>
+  </footer>
+
+</body>
+</html>

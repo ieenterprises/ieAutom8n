@@ -45,8 +45,10 @@ const {
 <template>
 	<div :class="$style.container">
 		<N8nLogo size="large" :release-channel="releaseChannel" />
-		<div v-if="subtitle" :class="$style.textContainer">
-			<N8nText size="large">{{ subtitle }}</N8nText>
+		<div :class="$style.textContainer">
+			<N8nText size="medium" color="text-light">
+				{{ subtitle ?? 'Enterprise Automation Platform' }}
+			</N8nText>
 		</div>
 		<div :class="$style.formContainer">
 			<slot>
@@ -61,6 +63,11 @@ const {
 					@update="onUpdate"
 				/>
 			</slot>
+		</div>
+		<div :class="$style.footer">
+			<N8nText size="small" color="text-light">
+				Powered by <a href="mailto:ieenterprises.ai@gmail.com" target="_blank" :class="$style.footerLink">ieEnterprises</a>
+			</N8nText>
 		</div>
 	</div>
 </template>
@@ -83,9 +90,26 @@ body {
 
 .textContainer {
 	text-align: center;
+	margin-top: var(--spacing--xs);
+	margin-bottom: var(--spacing--xs);
 }
 
 .formContainer {
+	padding-bottom: var(--spacing--md);
+}
+
+.footer {
+	text-align: center;
 	padding-bottom: var(--spacing--xl);
+}
+
+.footerLink {
+	color: var(--color--primary);
+	text-decoration: none;
+	font-weight: var(--font-weight--bold);
+
+	&:hover {
+		text-decoration: underline;
+	}
 }
 </style>
