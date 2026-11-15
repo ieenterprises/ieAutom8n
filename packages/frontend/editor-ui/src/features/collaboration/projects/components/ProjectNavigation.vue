@@ -454,6 +454,7 @@ onBeforeUnmount(() => {
 							:aria-label="locale.baseText('instanceAi.sidebar.deleteThread')"
 							:title="locale.baseText('instanceAi.sidebar.deleteThread')"
 							data-test-id="chat-delete-button"
+							@mousedown.stop
 							@click.stop.prevent="onDeleteChat(item)"
 						>
 							<N8nIcon icon="trash-2" size="small" />
@@ -734,22 +735,19 @@ onBeforeUnmount(() => {
 .chatItem {
 	position: relative;
 
-	&:hover .deleteChatButton,
-	.deleteChatButton:focus-visible {
-		opacity: 1;
-		pointer-events: auto;
+	&:not(.collapsed) a[role='menuitem'] {
+		padding-right: var(--spacing--2xl);
 	}
 
 	&:not(.collapsed):hover a[role='menuitem'] {
 		background-color: var(--color--background--light-1);
 		color: var(--color--text--shade-1);
-		padding-right: var(--spacing--xl);
 	}
 }
 
 .deleteChatButton {
 	position: absolute;
-	right: var(--spacing--4xs);
+	right: var(--spacing--3xs);
 	top: 50%;
 	transform: translateY(-50%);
 	display: flex;
@@ -760,21 +758,17 @@ onBeforeUnmount(() => {
 	border: none;
 	color: var(--color--text--tint-2);
 	cursor: pointer;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.15s ease, color 0.15s ease;
+	opacity: 0.65;
+	pointer-events: auto;
+	transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 	border-radius: var(--border-radius--base);
+	z-index: 2;
 
 	&:hover,
 	&:focus-visible {
-		color: var(--color--danger, #e02424);
-	}
-}
-
-@media (hover: none) {
-	.deleteChatButton {
 		opacity: 1;
-		pointer-events: auto;
+		color: var(--color--danger, #e02424);
+		background-color: rgba(224, 36, 36, 0.12);
 	}
 }
 </style>
