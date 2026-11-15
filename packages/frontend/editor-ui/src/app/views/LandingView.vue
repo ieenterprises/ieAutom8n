@@ -5,7 +5,9 @@ import { useSettingsStore } from '@n8n/stores/settings.store';
 import { useUsersStore } from '@n8n/stores/users.store';
 import { CURATED_TEMPLATES, type ICuratedTemplate } from '@/features/workflows/templates/curatedTemplates';
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const documentTitle = useDocumentTitle();
 const settingsStore = useSettingsStore();
 const usersStore = useUsersStore();
@@ -46,10 +48,17 @@ const copyTemplateJson = async (template?: ICuratedTemplate) => {
 	}
 };
 
-const importToInstance = (host: string) => {
+const currentDomain = computed(() => {
+	if (typeof window !== 'undefined' && window.location.host) {
+		return window.location.host;
+	}
+	return 'ieautom8n-latest.onrender.com';
+});
+
+const importCurrentInstance = () => {
 	if (!activeTemplate.value) return;
-	const url = `https://${host}/workflow/new?templateId=${encodeURIComponent(activeTemplate.value.id)}`;
-	window.open(url, '_blank');
+	closeTemplateModal();
+	void router.push({ name: VIEWS.TEMPLATE_IMPORT, params: { id: activeTemplate.value.id } });
 };
 
 onMounted(() => {
@@ -609,14 +618,26 @@ onMounted(() => {
 					</div>
 
 					<div class="modal-body">
-						<!-- Group 1: Import to destination -->
+						<!-- Template Preview Card -->
+						<div v-if="activeTemplate" class="modal-template-preview">
+							<div class="modal-template-badge-row">
+								<span class="preview-badge">{{ activeTemplate.badge }}</span>
+								<span class="preview-nodes">{{ activeTemplate.nodesCount }} Nodes</span>
+							</div>
+							<h3 class="preview-title">{{ activeTemplate.title || activeTemplate.name }}</h3>
+							<p class="preview-author">By {{ activeTemplate.author }}</p>
+							<p class="preview-desc">{{ activeTemplate.description }}</p>
+							<div v-if="activeTemplate.tags?.length" class="preview-tags">
+								<span v-for="tag in activeTemplate.tags" :key="tag" class="preview-tag">{{ tag }}</span>
+							</div>
+						</div>
+
+						<!-- Import to destination -->
 						<div class="modal-group">
-							<div class="modal-group-title">Import to an ieAutom8n destination</div>
-
 							<button
 								type="button"
-								class="modal-action-card"
-								@click="importToInstance('ieautom8n.onrender.com')"
+								class="modal-action-card modal-action-primary"
+								@click="importCurrentInstance"
 							>
 								<div class="modal-action-icon">
 									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -627,25 +648,7 @@ onMounted(() => {
 									</svg>
 								</div>
 								<div class="modal-action-text">
-									Import template to ieautom8n.onrender.com self-hosted instance
-								</div>
-							</button>
-
-							<button
-								type="button"
-								class="modal-action-card"
-								@click="importToInstance('ieautom8n-latest.onrender.com')"
-							>
-								<div class="modal-action-icon">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-										<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-										<line x1="6" y1="6" x2="6.01" y2="6" />
-										<line x1="6" y1="18" x2="6.01" y2="18" />
-									</svg>
-								</div>
-								<div class="modal-action-text">
-									Import template to ieautom8n-latest.onrender.com self-hosted instance
+									Import template to {{ currentDomain }} self-hosted instance
 								</div>
 							</button>
 
@@ -667,28 +670,6 @@ onMounted(() => {
 									{{ copySuccess ? '✓ Copied template to clipboard!' : 'Copy template to clipboard (JSON)' }}
 								</div>
 							</button>
-						</div>
-
-						<!-- Group 2: Get started -->
-						<div class="modal-group">
-							<div class="modal-group-title">Get started with ieAutom8n</div>
-
-							<a
-								href="https://docs.n8n.io/hosting/"
-								target="_blank"
-								rel="noopener noreferrer"
-								class="modal-action-card"
-							>
-								<div class="modal-action-icon">
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-										<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-									</svg>
-								</div>
-								<div class="modal-action-text">
-									Open self-hosting installation docs
-								</div>
-							</a>
 						</div>
 					</div>
 				</div>
@@ -1737,6 +1718,77 @@ onMounted(() => {
 	&:active {
 		transform: translateY(0);
 	}
+}
+.modal-action-primary {
+	background: #f1f5f9;
+	border: 1px solid #cbd5e1;
+	font-weight: 600;
+	&:hover {
+		background: #e2e8f0;
+		border-color: #94a3b8;
+	}
+}
+.modal-template-preview {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 14px;
+	padding: 18px 20px;
+	margin-bottom: 8px;
+}
+.modal-template-badge-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+.preview-badge {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 3px 10px;
+	border-radius: 9999px;
+	background: #ede9fe;
+	color: #7c3aed;
+}
+.preview-nodes {
+	font-size: 11px;
+	font-weight: 600;
+	padding: 3px 10px;
+	border-radius: 9999px;
+	background: #f1f5f9;
+	color: #475569;
+}
+.preview-title {
+	font-size: 16px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 4px;
+	line-height: 1.35;
+}
+.preview-author {
+	font-size: 12px;
+	color: #64748b;
+	margin: 0 0 10px;
+}
+.preview-desc {
+	font-size: 13px;
+	color: #475569;
+	line-height: 1.5;
+	margin: 0 0 12px;
+}
+.preview-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+.preview-tag {
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 6px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	color: #64748b;
 }
 .modal-action-icon {
 	width: 22px;

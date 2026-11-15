@@ -25,6 +25,7 @@ import { useReadyToRunWorkflowsStore } from '@/experiments/readyToRunWorkflows/s
 import { useTelemetry } from '@n8n/composables/useTelemetry';
 import { useExecutionDebugging } from '@/features/execution/executions/composables/useExecutionDebugging';
 import { getSampleWorkflowByTemplateId } from '@/features/workflows/templates/utils/workflowSamples';
+import { findCuratedTemplate } from '@/features/workflows/templates/curatedTemplates';
 import { EnterpriseEditionFeature, VIEWS } from '@/app/constants';
 import type { IWorkflowDb } from '@/Interface';
 import {
@@ -137,6 +138,20 @@ export function useWorkflowInitialization() {
 			toast.showError(error, i18n.baseText('nodeView.showError.mounted1.title'), {
 				message: i18n.baseText('nodeView.showError.mounted1.message') + ':',
 			});
+		}
+
+		const curated = findCuratedTemplate(templateId.toString());
+		if (curated) {
+			const cloned = JSON.parse(JSON.stringify(curated.workflow));
+			await openWorkflowTemplateFromJSON({
+				...cloned,
+				name: curated.name,
+				meta: {
+					...(cloned.meta || {}),
+					templateId: curated.id,
+				},
+			});
+			return true;
 		}
 
 		const loadWorkflowFromJSON = route.query.fromJson === 'true';
@@ -443,14 +458,6 @@ export function useWorkflowInitialization() {
 		// Must be checked before workflowId since template routes use route.params.id, not name
 		const handledTemplate = await handleTemplateImportRoute();
 		if (handledTemplate) {
-			isLoading.value = false;
-			return;
-		}
-
-		const queryTemplateId =
-			(route.query.templateId as string) || (route.query.template as string);
-		if (queryTemplateId) {
-			await openWorkflowTemplate(queryTemplateId);
 			isLoading.value = false;
 			return;
 		}

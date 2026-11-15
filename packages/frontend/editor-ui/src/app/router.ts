@@ -434,6 +434,13 @@ export const routes: RouteRecordRaw[] = [
 			middleware: ['authenticated'],
 		},
 		beforeEnter: (to) => {
+			const templateId = (to.query.templateId as string) || (to.query.template as string);
+			if (templateId) {
+				return {
+					name: VIEWS.TEMPLATE_IMPORT,
+					params: { id: templateId },
+				};
+			}
 			// Generate a unique workflow ID using 16-character nanoid and redirect to it
 			// Preserve existing query params (e.g., templateId, projectId) and add new=true
 			const newWorkflowId = generateNanoId();

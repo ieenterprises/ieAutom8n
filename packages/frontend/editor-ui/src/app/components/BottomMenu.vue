@@ -90,48 +90,8 @@ function handleSettingsSelect(key: string) {
 }
 
 const whatsNewItems = computed<{ available: boolean; children: IMenuElement[] }>(() => ({
-	available: versionsStore.hasVersionUpdates || versionsStore.whatsNewArticles.length > 0,
-	children: [
-		...versionsStore.whatsNewArticles.map(
-			(article) =>
-				({
-					id: `whats-new-article-${article.id}`,
-					label: article.title,
-					size: 'small',
-					customIconSize: 'small',
-					icon: {
-						type: 'emoji',
-						value: '•',
-						color: !versionsStore.isWhatsNewArticleRead(article.id) ? 'primary' : 'text-light',
-					},
-				}) satisfies IMenuItem,
-		),
-		{
-			id: 'full-changelog',
-			icon: 'external-link',
-			label: i18n.baseText('mainSidebar.whatsNew.fullChangelog'),
-			link: {
-				href: CHANGELOG_URL,
-				target: '_blank',
-			},
-			size: 'small',
-			customIconSize: 'small',
-		},
-		...(versionsStore.hasVersionUpdates
-			? [
-					{
-						id: 'version-upgrade-cta',
-						component: VersionUpdateCTA,
-						props: {
-							tooltipText: !usersStore.canUserUpdateVersion
-								? i18n.baseText('whatsNew.updateNudgeTooltip')
-								: undefined,
-							disabled: !usersStore.canUserUpdateVersion,
-						},
-					},
-				]
-			: []),
-	],
+	available: false,
+	children: [],
 }));
 
 function handleSelect(key: string) {

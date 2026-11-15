@@ -572,7 +572,7 @@
   <div id="templateModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-7 shadow-2xl relative animate-in fade-in zoom-in duration-200" onclick="event.stopPropagation()">
       <!-- Modal Header -->
-      <div class="flex items-center justify-between mb-5">
+      <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-bold text-slate-900">Use template</h2>
         <button type="button" onclick="closeTemplateModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -581,28 +581,34 @@
         </button>
       </div>
 
-      <!-- Group 1 -->
-      <div class="space-y-2.5">
-        <p class="text-xs font-semibold text-slate-500 mb-1">Import to an ieAutom8n destination</p>
-        
-        <button type="button" onclick="importToInstance('ieautom8n.onrender.com')" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
-          <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-            <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-            <line x1="6" y1="6" x2="6.01" y2="6" />
-            <line x1="6" y1="18" x2="6.01" y2="18" />
-          </svg>
-          <span>Import template to ieautom8n.onrender.com self-hosted instance</span>
-        </button>
+      <!-- Template Details Box -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700">AI Video & Automation</span>
+          <span class="text-xs font-semibold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-md">47 Nodes</span>
+        </div>
+        <h3 class="text-base font-bold text-slate-900 mb-1 leading-snug">💥 Generate AI viral videos with NanoBanana & VEO3, shared on socials via Blotato</h3>
+        <p class="text-xs text-slate-500 mb-2">By Dr. Firas</p>
+        <p class="text-xs text-slate-600 leading-relaxed mb-3">Auto-generate AI viral videos with Fal.ai NanoBanana & Google DeepMind VEO3, distribute automatically across YouTube, TikTok, Facebook, and LinkedIn via Blotato, and log statuses to Google Sheets.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="text-[11px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">AI Video</span>
+          <span class="text-[11px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">DeepMind VEO3</span>
+          <span class="text-[11px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">NanoBanana</span>
+          <span class="text-[11px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">Blotato</span>
+          <span class="text-[11px] bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">Google Sheets</span>
+        </div>
+      </div>
 
-        <button type="button" onclick="importToInstance('ieautom8n-latest.onrender.com')" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
+      <!-- Action Buttons -->
+      <div class="space-y-2.5">
+        <button type="button" onclick="importToCurrentInstance()" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
           <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
             <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
             <line x1="6" y1="6" x2="6.01" y2="6" />
             <line x1="6" y1="18" x2="6.01" y2="18" />
           </svg>
-          <span>Import template to ieautom8n-latest.onrender.com self-hosted instance</span>
+          <span>Import template to <span id="currentDomainSpan">ieautom8n-latest.onrender.com</span> self-hosted instance</span>
         </button>
 
         <button id="copyJsonBtn" type="button" onclick="copyTemplateJson()" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
@@ -613,25 +619,21 @@
           <span id="copyJsonText">Copy template to clipboard (JSON)</span>
         </button>
       </div>
-
-      <!-- Group 2 -->
-      <div class="space-y-2.5 mt-5">
-        <p class="text-xs font-semibold text-slate-500 mb-1">Get started with ieAutom8n</p>
-
-        <a href="https://docs.n8n.io/hosting/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
-          <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-          <span>Open self-hosting installation docs</span>
-        </a>
-      </div>
     </div>
   </div>
 
   <script>
     const templateId = 'z8nPpsFFe7kDBQUm';
+    function updateCurrentDomain() {
+      const span = document.getElementById('currentDomainSpan');
+      if (span && window.location.host) {
+        span.textContent = window.location.host;
+      }
+    }
+    updateCurrentDomain();
+
     function openTemplateModal() {
+      updateCurrentDomain();
       const modal = document.getElementById('templateModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -644,8 +646,8 @@
     document.getElementById('templateModal').addEventListener('click', function(e) {
       if (e.target === this) closeTemplateModal();
     });
-    function importToInstance(host) {
-      window.open('https://' + host + '/workflow/new?templateId=' + encodeURIComponent(templateId), '_blank');
+    function importToCurrentInstance() {
+      window.location.href = '/workflows/templates/' + encodeURIComponent(templateId);
     }
     async function copyTemplateJson() {
       try {

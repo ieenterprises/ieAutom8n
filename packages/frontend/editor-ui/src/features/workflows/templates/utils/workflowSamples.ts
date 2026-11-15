@@ -1,6 +1,7 @@
 import { UnexpectedError } from '@n8n/errors';
 import type { WorkflowDataWithTemplateId } from '@/Interface';
 import { isWorkflowDataWithTemplateId } from './typeGuards';
+import { findCuratedTemplate } from '@/features/workflows/templates/curatedTemplates';
 /* eslint-disable import-x/extensions */
 import easyAiStarterJson from './samples/easy_ai_starter.json';
 import ragStarterJson from './samples/rag_starter.json';
@@ -30,6 +31,18 @@ export const SampleTemplates = {
 export const getSampleWorkflowByTemplateId = (
 	templateId: string,
 ): WorkflowDataWithTemplateId | undefined => {
+	const curated = findCuratedTemplate(templateId);
+	if (curated) {
+		const cloned = JSON.parse(JSON.stringify(curated.workflow));
+		return {
+			...cloned,
+			name: curated.name,
+			meta: {
+				...(cloned.meta || {}),
+				templateId: curated.id,
+			},
+		} as WorkflowDataWithTemplateId;
+	}
 	const workflows = [getEasyAiWorkflowJson(), getRagStarterWorkflowJson()];
 
 	return workflows.find((workflow) => workflow.meta.templateId === templateId);
