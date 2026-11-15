@@ -113,6 +113,9 @@ const onSubmit = async (values: { [key: string]: string | boolean }) => {
 		:form="formConfig"
 		:form-loading="loading"
 		data-test-id="setup-form"
+		switch-prompt="Already have an account?"
+		switch-link-text="Sign in"
+		:switch-link-to="{ name: VIEWS.SIGNIN }"
 		@submit="onSubmit"
 	/>
 </template>

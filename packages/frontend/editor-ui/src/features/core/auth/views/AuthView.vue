@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { RouteLocationRaw } from 'vue-router';
 import { N8nLogo } from '@n8n/design-system';
 import type { FormFieldValueUpdate, IFormBoxConfig } from '@/Interface';
 import { useSettingsStore } from '@n8n/stores/settings.store';
@@ -11,11 +12,17 @@ withDefaults(
 		form?: IFormBoxConfig;
 		formLoading?: boolean;
 		subtitle?: string;
+		switchPrompt?: string;
+		switchLinkText?: string;
+		switchLinkTo?: string | RouteLocationRaw;
 	}>(),
 	{
 		form: undefined,
 		formLoading: false,
 		subtitle: undefined,
+		switchPrompt: undefined,
+		switchLinkText: undefined,
+		switchLinkTo: undefined,
 	},
 );
 
@@ -66,6 +73,17 @@ const {
 					@update="onUpdate"
 				/>
 			</slot>
+			<div
+				v-if="$slots['switch-link'] || (switchLinkText && switchLinkTo)"
+				:class="$style.switchContainer"
+			>
+				<slot name="switch-link">
+					<span>
+						{{ switchPrompt }}
+						<router-link :to="switchLinkTo">{{ switchLinkText }}</router-link>
+					</span>
+				</slot>
+			</div>
 		</div>
 		<div :class="$style.footer">
 			<N8nText size="small" color="text-light">
@@ -130,6 +148,26 @@ body {
 
 .formContainer {
 	padding-bottom: var(--spacing--md);
+}
+
+.switchContainer {
+	margin-top: var(--spacing--md, 16px);
+	text-align: center;
+	font-size: var(--font-size--s, 13px);
+	color: #64748b;
+
+	a {
+		color: #7c3aed;
+		font-weight: 600;
+		text-decoration: none;
+		margin-left: 4px;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: #6d28d9;
+			text-decoration: underline;
+		}
+	}
 }
 
 .footer {

@@ -65,11 +65,10 @@ describe('SignupView', () => {
 		expect(() => renderComponent()).not.toThrow();
 	});
 
-	it('should redirect to Signin when no token in URL', async () => {
+	it('should not show error toast when no token in URL', async () => {
 		renderComponent();
 
-		expect(toast.showError).toHaveBeenCalledWith(expect.any(Error), expect.any(String));
-		expect(router.replace).toHaveBeenCalledWith({ name: VIEWS.SIGNIN });
+		expect(toast.showError).not.toHaveBeenCalled();
 	});
 
 	it('should validate signup token if there is any', async () => {

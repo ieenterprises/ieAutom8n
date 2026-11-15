@@ -297,12 +297,39 @@ const cacheCredentials = (form: EmailOrLdapLoginIdAndPassword) => {
 	emailOrLdapLoginId.value = form.emailOrLdapLoginId;
 	password.value = form.password;
 };
+
+const switchPrompt = computed(() => {
+	if (settingsStore.showSetupPage) {
+		return 'First time here?';
+	}
+	return "Don't have an account?";
+});
+
+const switchLinkText = computed(() => {
+	if (settingsStore.showSetupPage) {
+		return 'Set up owner account';
+	}
+	return 'Sign up';
+});
+
+const switchLinkRoute = computed(() => {
+	if (settingsStore.showSetupPage) {
+		return { name: VIEWS.SETUP };
+	}
+	return { name: VIEWS.SIGNUP };
+});
 </script>
 
 <template>
 	<div>
 		<template v-if="!showMfaView">
-			<AuthView v-if="isSsoLogin" data-test-id="signin-form">
+			<AuthView
+				v-if="isSsoLogin"
+				data-test-id="signin-form"
+				:switch-prompt="switchPrompt"
+				:switch-link-text="switchLinkText"
+				:switch-link-to="switchLinkRoute"
+			>
 				<SsoSigninCard
 					:form="formConfig"
 					:form-loading="loading"
@@ -317,6 +344,9 @@ const cacheCredentials = (form: EmailOrLdapLoginIdAndPassword) => {
 				v-else
 				:form="formConfig"
 				:form-loading="loading"
+				:switch-prompt="switchPrompt"
+				:switch-link-text="switchLinkText"
+				:switch-link-to="switchLinkRoute"
 				data-test-id="signin-form"
 				@submit="onEmailPasswordSubmitted"
 			/>

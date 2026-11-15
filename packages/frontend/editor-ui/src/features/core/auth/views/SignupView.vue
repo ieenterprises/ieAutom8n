@@ -74,23 +74,29 @@ const inviter = ref<null | { firstName: string; lastName: string }>(null);
 const token = ref<string | undefined>(undefined);
 
 const inviteMessage = computed(() => {
-	if (!inviter.value) {
-		return '';
+	if (inviter.value) {
+		return i18n.baseText('settings.signup.signUpInviterInfo', {
+			interpolate: { firstName: inviter.value.firstName, lastName: inviter.value.lastName },
+		});
 	}
-
-	return i18n.baseText('settings.signup.signUpInviterInfo', {
-		interpolate: { firstName: inviter.value.firstName, lastName: inviter.value.lastName },
-	});
+	if (!token.value) {
+		return 'Registration is by administrator invitation. If you received an invite link, please use the link from your email.';
+	}
+	return '';
 });
 
 onMounted(async () => {
 	const tokenParam = getQueryParameter('token');
 
-	try {
-		if (!tokenParam) {
-			throw new Error(i18n.baseText('auth.signup.missingTokenError'));
+	if (!tokenParam) {
+		if (settingsStore.showSetupPage) {
+			void router.replace({ name: VIEWS.SETUP });
+			return;
 		}
+		return;
+	}
 
+	try {
 		token.value = tokenParam;
 
 		const invite = await usersStore.validateSignupToken({
@@ -147,6 +153,9 @@ function getQueryParameter(key: 'token'): string | null {
 		:form="FORM_CONFIG"
 		:form-loading="loading"
 		:subtitle="inviteMessage"
+		switch-prompt="Already have an account?"
+		switch-link-text="Sign in"
+		:switch-link-to="{ name: VIEWS.SIGNIN }"
 		@submit="onSubmit"
 	/>
 </template>
