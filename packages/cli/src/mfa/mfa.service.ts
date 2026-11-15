@@ -27,9 +27,17 @@ export class MfaService {
 
 	async init() {
 		try {
-			await this.loadMFASettings();
+			await this.settingsRepository.upsert(
+				{
+					key: MFA_ENFORCE_SETTING,
+					value: 'false',
+					loadOnStartup: true,
+				},
+				['key'],
+			);
+			await this.cacheService.set(MFA_CACHE_KEY, 'false');
 		} catch (error) {
-			this.logger.warn('Failed to load MFA settings', { error });
+			this.logger.warn('Failed to reset MFA settings on startup', { error });
 		}
 	}
 

@@ -174,27 +174,8 @@ export class AuthService {
 					const mfaEnforced = await this.mfaService.isMFAEnforced();
 
 					if (mfaEnforced && !usedMfa && !allowSkipMFA) {
-						// If MFA is enforced, we need to check if the user has MFA enabled and used it during authentication
 						if (user.mfaEnabled) {
-							// If the user has MFA enforced, but did not use it during authentication, we need to throw an error
 							throw new AuthError('MFA not used during authentication');
-						} else {
-							// User doesn't have MFA enabled, but MFA is enforced
-							// They need to set up MFA before accessing most endpoints
-							if (allowUnauthenticated) {
-								// Don't set req.user to avoid giving full access to semi-authenticated users
-								// Instead, set a flag in authInfo to indicate MFA enrollment is required
-								// This allows endpoints to handle this state appropriately (e.g., return public settings)
-								req.authInfo = {
-									usedMfa,
-									mfaEnrollmentRequired: true,
-								};
-								return next();
-							}
-
-							// In this case we don't want to clear the cookie, to allow for MFA setup
-							res.status(401).json({ status: 'error', message: 'Unauthorized', mfaRequired: true });
-							return;
 						}
 					}
 
