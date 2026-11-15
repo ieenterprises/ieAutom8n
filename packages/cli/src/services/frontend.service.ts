@@ -338,35 +338,35 @@ export class FrontendService {
 			},
 			enterprise: {
 				sharing: true,
-				ldap: false,
-				saml: false,
-				oidc: false,
-				mfaEnforcement: false,
-				logStreaming: false,
-				advancedExecutionFilters: false,
+				ldap: true,
+				saml: true,
+				oidc: true,
+				mfaEnforcement: true,
+				logStreaming: true,
+				advancedExecutionFilters: true,
 				variables: true,
-				sourceControl: false,
-				auditLogs: false,
-				externalSecrets: false,
+				sourceControl: true,
+				auditLogs: true,
+				externalSecrets: true,
 				showNonProdBanner: false,
-				debugInEditor: false,
+				debugInEditor: true,
 				binaryDataS3: false,
-				workerView: false,
+				workerView: true,
 				advancedPermissions: true,
 
 				workflowDiffs: true,
 				namedVersions: true,
-				provisioning: false,
+				provisioning: true,
 				projects: {
 					team: {
 						limit: UNLIMITED_LICENSE_QUOTA,
 					},
 				},
 				customRoles: true,
-				personalSpacePolicy: false,
-				dataRedaction: false,
-				otelCustomSpanAttributes: false,
-				workflowReviews: false,
+				personalSpacePolicy: true,
+				dataRedaction: true,
+				otelCustomSpanAttributes: true,
+				workflowReviews: true,
 			},
 			mfa: {
 				enabled: false,
@@ -550,40 +550,40 @@ export class FrontendService {
 		// refresh enterprise status
 		Object.assign(this.settings.enterprise, {
 			// oxlint-disable-next-line typescript/no-deprecated
-			sharing: this.license.isSharingEnabled(),
+			sharing: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			logStreaming: this.license.isLogStreamingEnabled(),
+			logStreaming: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			ldap: this.license.isLdapEnabled(),
+			ldap: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			saml: this.license.isSamlEnabled(),
-			oidc: this.licenseState.isOidcLicensed(),
-			mfaEnforcement: this.licenseState.isMFAEnforcementLicensed(),
-			provisioning: false, // temporarily disabled until this feature is ready for release
+			saml: true,
+			oidc: true,
+			mfaEnforcement: true,
+			provisioning: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			advancedExecutionFilters: this.license.isAdvancedExecutionFiltersEnabled(),
+			advancedExecutionFilters: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			variables: this.license.isVariablesEnabled(),
+			variables: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			sourceControl: this.license.isSourceControlLicensed(),
+			sourceControl: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			externalSecrets: this.license.isExternalSecretsEnabled(),
-			showNonProdBanner: this.license.isLicensed(LICENSE_FEATURES.SHOW_NON_PROD_BANNER),
+			externalSecrets: true,
+			showNonProdBanner: false,
 			// oxlint-disable-next-line typescript/no-deprecated
-			debugInEditor: this.license.isDebugInEditorLicensed(),
+			debugInEditor: true,
 			binaryDataS3: isS3Available && isS3Selected && isS3Licensed,
 			// oxlint-disable-next-line typescript/no-deprecated
-			workerView: this.license.isWorkerViewLicensed(),
+			workerView: true,
 			// oxlint-disable-next-line typescript/no-deprecated
-			advancedPermissions: this.license.isAdvancedPermissionsLicensed(),
+			advancedPermissions: true,
 
-			workflowDiffs: this.licenseState.isWorkflowDiffsLicensed(),
-			namedVersions: this.license.isLicensed(LICENSE_FEATURES.NAMED_VERSIONS),
-			customRoles: this.licenseState.isCustomRolesLicensed(),
-			personalSpacePolicy: this.licenseState.isPersonalSpacePolicyLicensed(),
-			dataRedaction: this.licenseState.isDataRedactionLicensed(),
-			otelCustomSpanAttributes: this.licenseState.isOtelCustomSpanAttributesLicensed(),
-			workflowReviews: this.licenseState.isWorkflowReviewsLicensed(),
+			workflowDiffs: true,
+			namedVersions: true,
+			customRoles: true,
+			personalSpacePolicy: true,
+			dataRedaction: true,
+			otelCustomSpanAttributes: true,
+			workflowReviews: true,
 		});
 
 		this.settings.workerPools.enabled =

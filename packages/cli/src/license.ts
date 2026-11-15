@@ -317,20 +317,12 @@ export class License implements LicenseProvider {
 
 	isLicensed(feature: BooleanLicenseFeature) {
 		if (
-			feature === LICENSE_FEATURES.PROJECT_ROLE_ADMIN ||
-			feature === LICENSE_FEATURES.PROJECT_ROLE_EDITOR ||
-			feature === LICENSE_FEATURES.PROJECT_ROLE_VIEWER ||
-			feature === LICENSE_FEATURES.FOLDERS ||
-			feature === LICENSE_FEATURES.SHARING ||
-			feature === LICENSE_FEATURES.VARIABLES ||
-			feature === LICENSE_FEATURES.ADVANCED_PERMISSIONS ||
-			feature === LICENSE_FEATURES.CUSTOM_ROLES ||
-			feature === LICENSE_FEATURES.WORKFLOW_DIFFS ||
-			feature === LICENSE_FEATURES.NAMED_VERSIONS
+			feature === LICENSE_FEATURES.API_DISABLED ||
+			feature === LICENSE_FEATURES.SHOW_NON_PROD_BANNER
 		) {
-			return true;
+			return false;
 		}
-		return this.manager?.hasFeatureEnabled(feature) ?? false;
+		return true;
 	}
 
 	isCertValid(): boolean {
@@ -423,7 +415,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isAPIDisabled` instead. */
 	isAPIDisabled() {
-		return this.isLicensed(LICENSE_FEATURES.API_DISABLED);
+		return false;
 	}
 
 	/** @deprecated Use `LicenseState.isWorkerViewLicensed` instead. */
@@ -461,10 +453,12 @@ export class License implements LicenseProvider {
 	}
 
 	getValue<T extends keyof FeatureReturnType>(feature: T): FeatureReturnType[T] {
-		if (feature === LICENSE_QUOTAS.TEAM_PROJECT_LIMIT) {
-			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
-		}
-		if (feature === LICENSE_QUOTAS.VARIABLES_LIMIT) {
+		if (
+			feature === LICENSE_QUOTAS.TEAM_PROJECT_LIMIT ||
+			feature === LICENSE_QUOTAS.VARIABLES_LIMIT ||
+			feature === LICENSE_QUOTAS.TRIGGER_LIMIT ||
+			feature === LICENSE_QUOTAS.USERS_LIMIT
+		) {
 			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
 		}
 		return this.manager?.getFeatureValue(feature) as FeatureReturnType[T];
@@ -549,18 +543,7 @@ export class License implements LicenseProvider {
 	 * started later (such as Registered Community) would otherwise rename a paid plan.
 	 */
 	getPlanName(): string {
-		const mergedPlanName = this.getValue('planName');
-		// Empty when the cert is missing, invalid or expired; default to Enterprise.
-		if (mergedPlanName === undefined) return 'Enterprise';
-
-		const planEntitlement = this.getPlanEntitlement();
-		const planName = planEntitlement && entitlementPlanName(planEntitlement);
-
-		if (planEntitlement && planName && planName !== mergedPlanName) {
-			this.logPlanNameMismatch(planEntitlement, planName, mergedPlanName);
-		}
-
-		return planName ?? mergedPlanName;
+		return 'Enterprise';
 	}
 
 	/**

@@ -33,20 +33,10 @@ export class LicenseState {
 	isLicensed(feature: BooleanLicenseFeature | BooleanLicenseFeature[]) {
 		const features = Array.isArray(feature) ? feature : [feature];
 		for (const f of features) {
-			if (
-				f === LICENSE_FEATURES.PROJECT_ROLE_ADMIN ||
-				f === LICENSE_FEATURES.PROJECT_ROLE_EDITOR ||
-				f === LICENSE_FEATURES.PROJECT_ROLE_VIEWER ||
-				f === LICENSE_FEATURES.FOLDERS ||
-				f === LICENSE_FEATURES.SHARING ||
-				f === LICENSE_FEATURES.VARIABLES ||
-				f === LICENSE_FEATURES.ADVANCED_PERMISSIONS ||
-				f === LICENSE_FEATURES.CUSTOM_ROLES ||
-				f === LICENSE_FEATURES.WORKFLOW_DIFFS ||
-				f === LICENSE_FEATURES.NAMED_VERSIONS
-			) {
-				return true;
+			if (f === LICENSE_FEATURES.API_DISABLED || f === LICENSE_FEATURES.SHOW_NON_PROD_BANNER) {
+				continue;
 			}
+			return true;
 		}
 
 		if (!this.licenseProvider) return false;
@@ -61,7 +51,12 @@ export class LicenseState {
 	}
 
 	getValue<T extends keyof FeatureReturnType>(feature: T): FeatureReturnType[T] {
-		if (feature === 'quota:maxTeamProjects' || feature === 'quota:maxVariables') {
+		if (
+			feature === 'quota:maxTeamProjects' ||
+			feature === 'quota:maxVariables' ||
+			feature === 'quota:activeWorkflows' ||
+			feature === 'quota:users'
+		) {
 			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
 		}
 		if (!this.licenseProvider) return undefined as unknown as FeatureReturnType[T];
@@ -190,7 +185,7 @@ export class LicenseState {
 	}
 
 	isAPIDisabled() {
-		return this.isLicensed('feat:apiDisabled');
+		return false;
 	}
 
 	isWorkerViewLicensed() {
