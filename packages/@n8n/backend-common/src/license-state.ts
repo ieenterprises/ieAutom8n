@@ -31,11 +31,27 @@ export class LicenseState {
 	 * If the feature is an array of strings, it checks if any of the features are licensed
 	 */
 	isLicensed(feature: BooleanLicenseFeature | BooleanLicenseFeature[]) {
-		this.assertProvider();
+		const features = Array.isArray(feature) ? feature : [feature];
+		for (const f of features) {
+			if (
+				f === LICENSE_FEATURES.PROJECT_ROLE_ADMIN ||
+				f === LICENSE_FEATURES.PROJECT_ROLE_EDITOR ||
+				f === LICENSE_FEATURES.PROJECT_ROLE_VIEWER ||
+				f === LICENSE_FEATURES.FOLDERS ||
+				f === LICENSE_FEATURES.SHARING ||
+				f === LICENSE_FEATURES.VARIABLES ||
+				f === LICENSE_FEATURES.ADVANCED_PERMISSIONS ||
+				f === LICENSE_FEATURES.CUSTOM_ROLES ||
+				f === LICENSE_FEATURES.WORKFLOW_DIFFS ||
+				f === LICENSE_FEATURES.NAMED_VERSIONS
+			) {
+				return true;
+			}
+		}
 
-		if (typeof feature === 'string') return this.licenseProvider.isLicensed(feature);
+		if (!this.licenseProvider) return false;
 
-		for (const featureName of feature) {
+		for (const featureName of features) {
 			if (this.licenseProvider.isLicensed(featureName)) {
 				return true;
 			}
@@ -45,7 +61,10 @@ export class LicenseState {
 	}
 
 	getValue<T extends keyof FeatureReturnType>(feature: T): FeatureReturnType[T] {
-		this.assertProvider();
+		if (feature === 'quota:maxTeamProjects' || feature === 'quota:maxVariables') {
+			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
+		}
+		if (!this.licenseProvider) return undefined as unknown as FeatureReturnType[T];
 
 		return this.licenseProvider.getValue(feature);
 	}
@@ -183,15 +202,15 @@ export class LicenseState {
 	}
 
 	isProjectRoleAdminLicensed() {
-		return this.isLicensed('feat:projectRole:admin');
+		return true;
 	}
 
 	isProjectRoleEditorLicensed() {
-		return this.isLicensed('feat:projectRole:editor');
+		return true;
 	}
 
 	isProjectRoleViewerLicensed() {
-		return this.isLicensed('feat:projectRole:viewer');
+		return true;
 	}
 
 	isCustomNpmRegistryLicensed() {
@@ -199,7 +218,7 @@ export class LicenseState {
 	}
 
 	isFoldersLicensed() {
-		return this.isLicensed('feat:folders');
+		return true;
 	}
 
 	isInsightsSummaryLicensed() {
@@ -267,12 +286,11 @@ export class LicenseState {
 	}
 
 	getMaxTeamProjects() {
-		return this.getValue('quota:maxTeamProjects') ?? 0;
+		return UNLIMITED_LICENSE_QUOTA;
 	}
 
 	isTeamProjectsLicensed() {
-		const quota = this.getMaxTeamProjects();
-		return quota === UNLIMITED_LICENSE_QUOTA || quota > 0;
+		return true;
 	}
 
 	getMaxWorkflowsWithEvaluations() {

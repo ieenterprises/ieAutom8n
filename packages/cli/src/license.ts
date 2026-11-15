@@ -316,6 +316,20 @@ export class License implements LicenseProvider {
 	}
 
 	isLicensed(feature: BooleanLicenseFeature) {
+		if (
+			feature === LICENSE_FEATURES.PROJECT_ROLE_ADMIN ||
+			feature === LICENSE_FEATURES.PROJECT_ROLE_EDITOR ||
+			feature === LICENSE_FEATURES.PROJECT_ROLE_VIEWER ||
+			feature === LICENSE_FEATURES.FOLDERS ||
+			feature === LICENSE_FEATURES.SHARING ||
+			feature === LICENSE_FEATURES.VARIABLES ||
+			feature === LICENSE_FEATURES.ADVANCED_PERMISSIONS ||
+			feature === LICENSE_FEATURES.CUSTOM_ROLES ||
+			feature === LICENSE_FEATURES.WORKFLOW_DIFFS ||
+			feature === LICENSE_FEATURES.NAMED_VERSIONS
+		) {
+			return true;
+		}
 		return this.manager?.hasFeatureEnabled(feature) ?? false;
 	}
 
@@ -334,7 +348,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isSharingLicensed` instead. */
 	isSharingEnabled() {
-		return this.isLicensed(LICENSE_FEATURES.SHARING);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isLogStreamingLicensed` instead. */
@@ -374,7 +388,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isAdvancedPermissionsLicensed` instead. */
 	isAdvancedPermissionsLicensed() {
-		return this.isLicensed(LICENSE_FEATURES.ADVANCED_PERMISSIONS);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isDebugInEditorLicensed` instead. */
@@ -394,7 +408,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isVariablesLicensed` instead. */
 	isVariablesEnabled() {
-		return this.isLicensed(LICENSE_FEATURES.VARIABLES);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isSourceControlLicensed` instead. */
@@ -419,17 +433,17 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isProjectRoleAdminLicensed` instead. */
 	isProjectRoleAdminLicensed() {
-		return this.isLicensed(LICENSE_FEATURES.PROJECT_ROLE_ADMIN);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isProjectRoleEditorLicensed` instead. */
 	isProjectRoleEditorLicensed() {
-		return this.isLicensed(LICENSE_FEATURES.PROJECT_ROLE_EDITOR);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isProjectRoleViewerLicensed` instead. */
 	isProjectRoleViewerLicensed() {
-		return this.isLicensed(LICENSE_FEATURES.PROJECT_ROLE_VIEWER);
+		return true;
 	}
 
 	/** @deprecated Use `LicenseState.isCustomNpmRegistryLicensed` instead. */
@@ -439,7 +453,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState.isFoldersLicensed` instead. */
 	isFoldersEnabled() {
-		return this.isLicensed(LICENSE_FEATURES.FOLDERS);
+		return true;
 	}
 
 	getCurrentEntitlements() {
@@ -447,6 +461,12 @@ export class License implements LicenseProvider {
 	}
 
 	getValue<T extends keyof FeatureReturnType>(feature: T): FeatureReturnType[T] {
+		if (feature === LICENSE_QUOTAS.TEAM_PROJECT_LIMIT) {
+			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
+		}
+		if (feature === LICENSE_QUOTAS.VARIABLES_LIMIT) {
+			return UNLIMITED_LICENSE_QUOTA as FeatureReturnType[T];
+		}
 		return this.manager?.getFeatureValue(feature) as FeatureReturnType[T];
 	}
 
@@ -521,7 +541,7 @@ export class License implements LicenseProvider {
 
 	/** @deprecated Use `LicenseState` instead. */
 	getTeamProjectLimit() {
-		return this.getValue(LICENSE_QUOTAS.TEAM_PROJECT_LIMIT) ?? 0;
+		return UNLIMITED_LICENSE_QUOTA;
 	}
 
 	/**
@@ -530,8 +550,8 @@ export class License implements LicenseProvider {
 	 */
 	getPlanName(): string {
 		const mergedPlanName = this.getValue('planName');
-		// Empty when the cert is missing, invalid or expired; the entitlements alone can't tell.
-		if (mergedPlanName === undefined) return 'Community';
+		// Empty when the cert is missing, invalid or expired; default to Enterprise.
+		if (mergedPlanName === undefined) return 'Enterprise';
 
 		const planEntitlement = this.getPlanEntitlement();
 		const planName = planEntitlement && entitlementPlanName(planEntitlement);

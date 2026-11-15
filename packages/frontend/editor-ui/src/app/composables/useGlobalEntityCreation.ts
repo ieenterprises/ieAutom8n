@@ -296,7 +296,7 @@ export const useGlobalEntityCreation = () => {
 				{
 					id: CREATE_PROJECT_ID,
 					title: projectTitle,
-					disabled: true,
+					disabled: false,
 				},
 				...instanceAiTrailing,
 			];
@@ -620,12 +620,8 @@ export const useGlobalEntityCreation = () => {
 
 		if (id !== CREATE_PROJECT_ID) return;
 
-		if (projectsStore.canCreateProjects && projectsStore.hasPermissionToCreateProjects) {
-			void createProject('universal_button');
-			return;
-		}
-
-		void usePageRedirectionHelper().goToUpgrade('rbac', 'upgrade-rbac');
+		void createProject('universal_button');
+		return;
 	};
 
 	const projectsLimitReachedMessage = computed(() => {

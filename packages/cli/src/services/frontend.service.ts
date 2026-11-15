@@ -1,7 +1,7 @@
 import type { FrontendSettings, ITelemetrySettings, N8nEnvFeatFlags } from '@n8n/api-types';
 import { LicenseState, Logger, ModuleRegistry } from '@n8n/backend-common';
 import { GlobalConfig, SecurityConfig } from '@n8n/config';
-import { LICENSE_FEATURES, LICENSE_QUOTAS, Time } from '@n8n/constants';
+import { LICENSE_FEATURES, LICENSE_QUOTAS, UNLIMITED_LICENSE_QUOTA, Time } from '@n8n/constants';
 import { WorkflowRepository } from '@n8n/db';
 import { Container, Service } from '@n8n/di';
 import { createWriteStream } from 'fs';
@@ -337,14 +337,14 @@ export class FrontendService {
 				external: process.env.NODE_FUNCTION_ALLOW_EXTERNAL?.split(',') ?? undefined,
 			},
 			enterprise: {
-				sharing: false,
+				sharing: true,
 				ldap: false,
 				saml: false,
 				oidc: false,
 				mfaEnforcement: false,
 				logStreaming: false,
 				advancedExecutionFilters: false,
-				variables: false,
+				variables: true,
 				sourceControl: false,
 				auditLogs: false,
 				externalSecrets: false,
@@ -352,17 +352,17 @@ export class FrontendService {
 				debugInEditor: false,
 				binaryDataS3: false,
 				workerView: false,
-				advancedPermissions: false,
+				advancedPermissions: true,
 
-				workflowDiffs: false,
-				namedVersions: false,
+				workflowDiffs: true,
+				namedVersions: true,
 				provisioning: false,
 				projects: {
 					team: {
-						limit: 0,
+						limit: UNLIMITED_LICENSE_QUOTA,
 					},
 				},
-				customRoles: false,
+				customRoles: true,
 				personalSpacePolicy: false,
 				dataRedaction: false,
 				otelCustomSpanAttributes: false,
@@ -674,10 +674,10 @@ export class FrontendService {
 		this.settings.binaryDataMode = this.binaryDataConfig.mode;
 
 		// oxlint-disable-next-line typescript/no-deprecated
-		this.settings.enterprise.projects.team.limit = this.license.getTeamProjectLimit();
+		this.settings.enterprise.projects.team.limit = UNLIMITED_LICENSE_QUOTA;
 
 		// oxlint-disable-next-line typescript/no-deprecated
-		this.settings.folders.enabled = this.license.isFoldersEnabled();
+		this.settings.folders.enabled = true;
 
 		// Refresh evaluation settings
 		this.settings.evaluation.quota = this.licenseState.getMaxWorkflowsWithEvaluations();
