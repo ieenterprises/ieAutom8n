@@ -1036,7 +1036,7 @@ describe('PromotionPreviewView', () => {
 			.mockRejectedValueOnce(
 				new ResponseError('Import blocked: 1 issue(s) must be resolved', { httpStatusCode: 409 }),
 			)
-			.mockRejectedValueOnce(new ResponseError("Can't connect to n8n."));
+			.mockRejectedValueOnce(new ResponseError("Can't connect to ieAutom8n."));
 		const { getByTestId } = await renderApply();
 		const error = () => getByTestId('promotion-preview-operation-error');
 

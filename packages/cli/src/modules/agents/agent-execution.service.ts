@@ -519,7 +519,7 @@ export class AgentExecutionService {
 		const timeline = execution.timeline ?? [];
 		const stoppedAt = new Date();
 		const error =
-			'Agent execution stopped because n8n restarted, for example after a crash or an update.';
+			'Agent execution stopped because ieAutom8n restarted, for example after a crash or an update.';
 		const duration = execution.startedAt
 			? Math.max(0, stoppedAt.getTime() - execution.startedAt.getTime())
 			: 0;

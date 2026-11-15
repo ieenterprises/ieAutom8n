@@ -182,7 +182,7 @@ export async function requestResponse<T = unknown>(
 		return await axios.request<T>(options);
 	} catch (error) {
 		if (error.message === 'Network Error') {
-			throw new ResponseError("Can't connect to n8n.", {
+			throw new ResponseError("Can't connect to ieAutom8n.", {
 				errorCode: NO_NETWORK_ERROR_CODE,
 			});
 		}

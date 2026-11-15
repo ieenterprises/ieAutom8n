@@ -139,9 +139,9 @@ describe('SigninView', () => {
 		renderComponent();
 
 		expect(showMessage).toHaveBeenCalledWith({
-			title: "You don't have access to n8n",
+			title: "You don't have access to ieAutom8n",
 			message:
-				'Your role or permissions do not currently give you access to n8n. Please speak to your administrator if you think this is incorrect.',
+				'Your role or permissions do not currently give you access to ieAutom8n. Please speak to your administrator if you think this is incorrect.',
 			type: 'error',
 			duration: 0,
 		});

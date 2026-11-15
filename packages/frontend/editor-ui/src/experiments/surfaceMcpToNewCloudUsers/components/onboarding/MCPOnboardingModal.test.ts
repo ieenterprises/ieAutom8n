@@ -213,7 +213,7 @@ describe('MCPOnboardingModal', () => {
 		);
 		expect(container.textContent).toContain('claude mcp add --scope user --transport http n8n');
 		expect(getByTestId('mcp-onboarding-restart-step')).toHaveTextContent(
-			'Restart Claude Code and connect to n8n',
+			'Restart Claude Code and connect to ieAutom8n',
 		);
 	});
 
@@ -230,7 +230,7 @@ describe('MCPOnboardingModal', () => {
 		expect(container.textContent).toContain('[mcp_servers.n8n]');
 		expect(queryByTestId('mcp-onboarding-claude-server-url')).not.toBeInTheDocument();
 		expect(getByTestId('mcp-onboarding-restart-step')).toHaveTextContent(
-			'Restart Codex and connect to n8n',
+			'Restart Codex and connect to ieAutom8n',
 		);
 	});
 
@@ -316,7 +316,7 @@ describe('MCPOnboardingModal', () => {
 		expect(container.textContent).toContain('complete the n8n OAuth flow');
 		expect(container.textContent).not.toContain('Authorization');
 		expect(getByTestId('mcp-onboarding-restart-step')).toHaveTextContent(
-			'Restart Cursor and connect to n8n',
+			'Restart Cursor and connect to ieAutom8n',
 		);
 	});
 

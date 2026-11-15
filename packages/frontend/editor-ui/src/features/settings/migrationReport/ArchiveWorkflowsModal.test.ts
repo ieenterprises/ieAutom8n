@@ -47,7 +47,7 @@ describe('ArchiveWorkflowsModal', () => {
 			expect(screen.getByText("Archive 'Daily report' too?")).toBeInTheDocument();
 			expect(
 				screen.getByText(
-					new RegExp(`so it'll fail after the upgrade to n8n ${TARGET_VERSION_DISPLAY}`),
+					new RegExp(`so it'll fail after the upgrade to ieAutom8n ${TARGET_VERSION_DISPLAY}`),
 				),
 			).toBeInTheDocument();
 			expect(screen.queryByText(/It's published/)).not.toBeInTheDocument();

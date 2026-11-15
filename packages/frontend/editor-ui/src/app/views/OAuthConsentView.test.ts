@@ -94,7 +94,7 @@ describe('OAuthConsentView', () => {
 		const { getByText, getByTestId, queryByText } = renderComponent();
 		await waitAllPromises();
 
-		expect(getByText('Test MCP Client requests access to n8n public API')).toBeVisible();
+		expect(getByText('Test MCP Client requests access to ieAutom8n public API')).toBeVisible();
 		expect(getByText(/Choose what Test MCP Client is allowed to do/)).toBeVisible();
 		expect(getByTestId('consent-scopes')).toBeVisible();
 		expect(queryByText(/access this workflow on your behalf/)).toBeNull();
