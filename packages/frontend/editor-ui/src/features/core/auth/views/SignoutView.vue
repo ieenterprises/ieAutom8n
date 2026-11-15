@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { VIEWS } from '@/app/constants';
 import { useUsersStore } from '@n8n/stores/users.store';
 import { useSSOStore } from '@/features/settings/sso/sso.store';
 import { useToast } from '@n8n/composables/useToast';
-import { useRouter } from 'vue-router';
 import { useI18n } from '@n8n/i18n';
 import { onMounted } from 'vue';
 
 const usersStore = useUsersStore();
 const ssoStore = useSSOStore();
 const toast = useToast();
-const router = useRouter();
 const i18n = useI18n();
 
 const logout = async () => {
@@ -25,7 +22,7 @@ const logout = async () => {
 		const viaOidc = ssoStore.isDefaultAuthenticationOidc;
 		const { redirectUrl } = await usersStore.logout({ viaOidc });
 
-		window.location.href = redirectUrl ?? router.resolve({ name: VIEWS.SIGNIN }).href;
+		window.location.href = redirectUrl ?? '/';
 	} catch (e) {
 		toast.showError(e, i18n.baseText('auth.signout.error'));
 	}

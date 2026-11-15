@@ -36,7 +36,7 @@ export const CLOUD_N8N_CONNECT_TOP_UP_PATH = '/manage/gateway';
  */
 export const TEMPLATES_URLS = {
 	DEFAULT_API_HOST: 'https://api.n8n.io/api/',
-	BASE_WEBSITE_URL: 'https://n8n.io/workflows/',
+	BASE_WEBSITE_URL: '/#templates',
 	UTM_QUERY: {
 		utm_source: 'n8n_app',
 		utm_medium: 'template_library',

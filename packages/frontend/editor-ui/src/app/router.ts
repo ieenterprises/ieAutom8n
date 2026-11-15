@@ -166,22 +166,6 @@ export const routes: RouteRecordRaw[] = [
 		path: '/',
 		name: 'landing',
 		component: LandingView,
-		beforeEnter: (_to, _from, next) => {
-			if (isAuthenticated()) {
-				const settingsStore = useSettingsStore();
-				const instanceAiSettings = settingsStore.moduleSettings['instance-ai'];
-				if (
-					settingsStore.isModuleActive('instance-ai') &&
-					instanceAiSettings?.enabled !== false &&
-					(instanceAiSettings?.setupCompleted === true || canManageInstanceAi()) &&
-					canMessageInstanceAi()
-				) {
-					return next({ name: INSTANCE_AI_VIEW });
-				}
-				return next('/home/workflows');
-			}
-			next();
-		},
 		meta: {
 			layout: 'auth',
 		},
@@ -287,7 +271,7 @@ export const routes: RouteRecordRaw[] = [
 		beforeEnter: (_to, _from, next) => {
 			const templatesStore = useTemplatesStore();
 			if (!templatesStore.hasCustomTemplatesHost) {
-				window.location.href = templatesStore.websiteTemplateRepositoryURL;
+				next({ path: '/', hash: '#templates' });
 			} else {
 				next();
 			}

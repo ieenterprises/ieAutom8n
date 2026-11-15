@@ -133,10 +133,7 @@ const mainMenuItems = computed<IMenuItem[]>(() => [
 			settingsStore.isTemplatesEnabled &&
 			!templatesStore.hasCustomTemplatesHost &&
 			!isResourceCenterEnabled.value,
-		link: {
-			href: templatesStore.websiteTemplateRepositoryURL,
-			target: '_blank',
-		},
+		route: { to: { path: '/', hash: '#templates' } },
 	},
 	{
 		id: 'insights',

@@ -55,8 +55,8 @@
       
       <!-- Brand Logo -->
       <a href="#" class="flex items-center gap-3 group">
-        <div class="w-10 h-10 rounded-xl bg-brand-50 border border-brand-200 flex items-center justify-center p-1.5 shadow-sm group-hover:border-brand-400 transition-all">
-          <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieAutom8n Logo" class="w-full h-full object-contain">
+        <div class="w-11 h-11 rounded-full bg-white border border-brand-200 flex items-center justify-center p-0.5 shadow-sm overflow-hidden group-hover:border-brand-400 transition-all">
+          <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieAutom8n Logo" class="w-full h-full object-cover rounded-full">
         </div>
         <div class="flex flex-col">
           <span class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
@@ -68,6 +68,7 @@
 
       <!-- Desktop Navigation Links -->
       <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#templates" class="hover:text-brand-600 transition-colors">Templates</a>
         <a href="#features" class="hover:text-brand-600 transition-colors">Features</a>
         <a href="#solutions" class="hover:text-brand-600 transition-colors">Solutions</a>
         <a href="#canvas" class="hover:text-brand-600 transition-colors">Workflow Canvas</a>
@@ -247,6 +248,58 @@
 
       </div>
 
+    </div>
+  </section>
+
+  <!-- Curated Templates Section -->
+  <section id="templates" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-brand-600 mb-2">Curated Workflow Templates</h2>
+        <p class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Automate Faster with Battle-Tested Templates</p>
+        <p class="mt-4 text-base text-slate-600">Kickstart your pipelines with pre-built, production-ready workflows. Click any template to inspect, import to your self-hosted ieAutom8n instance, or copy its JSON.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Template Card 1 -->
+        <div class="bg-white border border-slate-200 hover:border-brand-400 rounded-2xl p-7 shadow-sm hover:shadow-lg hover:shadow-brand-500/10 transition-all flex flex-col cursor-pointer group" onclick="openTemplateModal()">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-brand-50 border border-brand-200 text-brand-700">AI Video & Social Media</span>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">47 Nodes</span>
+          </div>
+
+          <h3 class="text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors mb-2.5 leading-snug">
+            💥 Generate AI viral videos with NanoBanana & VEO3, shared on socials via Blotato
+          </h3>
+
+          <p class="text-sm text-slate-600 leading-relaxed mb-5 flex-1">
+            Auto-generate AI viral videos with Fal.ai NanoBanana & Google DeepMind VEO3, distribute automatically across YouTube, TikTok, Facebook, and LinkedIn via Blotato, and log statuses to Google Sheets.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-6">
+            <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded">AI Video</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded">Google DeepMind VEO3</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded">NanoBanana</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded">Blotato</span>
+            <span class="text-[11px] font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded">Google Sheets</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+              <span>👤</span>
+              <span>Dr. Firas</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="px-3.5 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+                <span>Use template</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -498,11 +551,12 @@
   <footer class="py-12 bg-white border-t border-slate-200 text-slate-500 text-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
       <div class="flex items-center gap-3">
-        <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieEnterprises" class="w-7 h-7 object-contain">
+        <img src="https://raw.githubusercontent.com/ieenterprises/logo/main/Company%20Logo%203.png" alt="ieEnterprises" class="w-7 h-7 object-cover rounded-full">
         <span class="font-bold text-slate-900">ieAutom8n</span>
         <span>— Enterprise Automation Platform</span>
       </div>
       <div class="flex items-center gap-6">
+        <a href="#templates" class="hover:text-slate-900 transition">Templates</a>
         <a href="#features" class="hover:text-slate-900 transition">Features</a>
         <a href="#solutions" class="hover:text-slate-900 transition">Solutions</a>
         <a href="#pricing" class="hover:text-slate-900 transition">Pricing</a>
@@ -513,6 +567,108 @@
       </div>
     </div>
   </footer>
+
+  <!-- Use Template Modal -->
+  <div id="templateModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-7 shadow-2xl relative animate-in fade-in zoom-in duration-200" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-bold text-slate-900">Use template</h2>
+        <button type="button" onclick="closeTemplateModal()" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Group 1 -->
+      <div class="space-y-2.5">
+        <p class="text-xs font-semibold text-slate-500 mb-1">Import to an ieAutom8n destination</p>
+        
+        <button type="button" onclick="importToInstance('ieautom8n.onrender.com')" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
+          <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+            <line x1="6" y1="6" x2="6.01" y2="6" />
+            <line x1="6" y1="18" x2="6.01" y2="18" />
+          </svg>
+          <span>Import template to ieautom8n.onrender.com self-hosted instance</span>
+        </button>
+
+        <button type="button" onclick="importToInstance('ieautom8n-latest.onrender.com')" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
+          <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+            <line x1="6" y1="6" x2="6.01" y2="6" />
+            <line x1="6" y1="18" x2="6.01" y2="18" />
+          </svg>
+          <span>Import template to ieautom8n-latest.onrender.com self-hosted instance</span>
+        </button>
+
+        <button id="copyJsonBtn" type="button" onclick="copyTemplateJson()" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
+          <svg id="copyJsonIcon" class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+          </svg>
+          <span id="copyJsonText">Copy template to clipboard (JSON)</span>
+        </button>
+      </div>
+
+      <!-- Group 2 -->
+      <div class="space-y-2.5 mt-5">
+        <p class="text-xs font-semibold text-slate-500 mb-1">Get started with ieAutom8n</p>
+
+        <a href="https://docs.n8n.io/hosting/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center gap-3.5 px-5 py-4 bg-slate-100 hover:bg-slate-200 rounded-xl text-left text-sm font-medium text-slate-800 transition">
+          <svg class="w-5 h-5 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+          </svg>
+          <span>Open self-hosting installation docs</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const templateId = 'z8nPpsFFe7kDBQUm';
+    function openTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+    function closeTemplateModal() {
+      const modal = document.getElementById('templateModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    document.getElementById('templateModal').addEventListener('click', function(e) {
+      if (e.target === this) closeTemplateModal();
+    });
+    function importToInstance(host) {
+      window.open('https://' + host + '/workflow/new?templateId=' + encodeURIComponent(templateId), '_blank');
+    }
+    async function copyTemplateJson() {
+      try {
+        const res = await fetch('/curated-templates/' + templateId + '.json');
+        let text = '';
+        if (res.ok) {
+          text = await res.text();
+        } else {
+          text = JSON.stringify({ id: templateId, name: 'AI viral videos' });
+        }
+        await navigator.clipboard.writeText(text);
+        const txtEl = document.getElementById('copyJsonText');
+        txtEl.textContent = '✓ Copied template to clipboard!';
+        txtEl.classList.add('text-emerald-600', 'font-semibold');
+        setTimeout(() => {
+          txtEl.textContent = 'Copy template to clipboard (JSON)';
+          txtEl.classList.remove('text-emerald-600', 'font-semibold');
+        }, 3000);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
 
 </body>
 </html>

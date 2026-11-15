@@ -447,6 +447,14 @@ export function useWorkflowInitialization() {
 			return;
 		}
 
+		const queryTemplateId =
+			(route.query.templateId as string) || (route.query.template as string);
+		if (queryTemplateId) {
+			await openWorkflowTemplate(queryTemplateId);
+			isLoading.value = false;
+			return;
+		}
+
 		// Skip if no workflowId (shouldn't happen for non-template routes in WorkflowLayout)
 		if (!workflowId.value) {
 			isLoading.value = false;

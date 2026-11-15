@@ -2,10 +2,15 @@
 import { VIEWS } from '@/app/constants';
 import { useDocumentTitle } from '@/app/composables/useDocumentTitle';
 import { useSettingsStore } from '@n8n/stores/settings.store';
-import { computed, onMounted } from 'vue';
+import { useUsersStore } from '@n8n/stores/users.store';
+import { CURATED_TEMPLATES, type ICuratedTemplate } from '@/features/workflows/templates/curatedTemplates';
+import { ref, computed, onMounted } from 'vue';
 
 const documentTitle = useDocumentTitle();
 const settingsStore = useSettingsStore();
+const usersStore = useUsersStore();
+
+const isLoggedIn = computed(() => !!usersStore.currentUser);
 
 const getStartedRoute = computed(() => {
 	if (settingsStore.showSetupPage) {
@@ -13,6 +18,39 @@ const getStartedRoute = computed(() => {
 	}
 	return { name: VIEWS.SIGNUP };
 });
+
+const activeTemplate = ref<ICuratedTemplate | null>(null);
+const copySuccess = ref(false);
+
+const openTemplateModal = (template: ICuratedTemplate) => {
+	activeTemplate.value = template;
+	copySuccess.value = false;
+};
+
+const closeTemplateModal = () => {
+	activeTemplate.value = null;
+	copySuccess.value = false;
+};
+
+const copyTemplateJson = async (template?: ICuratedTemplate) => {
+	const tpl = template ?? activeTemplate.value;
+	if (!tpl) return;
+	try {
+		await navigator.clipboard.writeText(JSON.stringify(tpl.workflow, null, 2));
+		copySuccess.value = true;
+		setTimeout(() => {
+			copySuccess.value = false;
+		}, 3000);
+	} catch (e) {
+		console.error('Failed to copy to clipboard', e);
+	}
+};
+
+const importToInstance = (host: string) => {
+	if (!activeTemplate.value) return;
+	const url = `https://${host}/workflow/new?templateId=${encodeURIComponent(activeTemplate.value.id)}`;
+	window.open(url, '_blank');
+};
 
 onMounted(() => {
 	documentTitle.set('ieAutom8n — Enterprise Automation Platform by ieEnterprises');
@@ -47,6 +85,7 @@ onMounted(() => {
 
 				<!-- Nav Links -->
 				<nav class="nav-links">
+					<a href="#templates">Templates</a>
 					<a href="#features">Features</a>
 					<a href="#solutions">Solutions</a>
 					<a href="#canvas">Workflow Canvas</a>
@@ -54,17 +93,27 @@ onMounted(() => {
 					<a href="#faq">FAQ</a>
 				</nav>
 
-				<!-- Header Actions: Sign In & Sign Up -->
+				<!-- Header Actions: Sign In & Sign Up / Studio -->
 				<div class="header-actions">
-					<router-link :to="{ name: VIEWS.SIGNIN }" class="btn-signin">
-						Sign In
-					</router-link>
-					<router-link :to="getStartedRoute" class="btn-signup">
-						<span>Get Started</span>
-						<svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-						</svg>
-					</router-link>
+					<template v-if="isLoggedIn">
+						<router-link to="/home/workflows" class="btn-signup">
+							<span>Open Studio</span>
+							<svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+							</svg>
+						</router-link>
+					</template>
+					<template v-else>
+						<router-link :to="{ name: VIEWS.SIGNIN }" class="btn-signin">
+							Sign In
+						</router-link>
+						<router-link :to="getStartedRoute" class="btn-signup">
+							<span>Get Started</span>
+							<svg class="icon-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+							</svg>
+						</router-link>
+					</template>
 				</div>
 			</div>
 		</header>
@@ -198,6 +247,66 @@ onMounted(() => {
 						<div class="node-footer">
 							<span>#sales-alerts</span>
 							<span class="status-badge success">Delivered</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Curated Templates Section -->
+		<section id="templates" class="templates-section">
+			<div class="section-header">
+				<div class="section-tag">CURATED WORKFLOW TEMPLATES</div>
+				<h2 class="section-title">Automate Faster with Battle-Tested Templates</h2>
+				<p class="section-subtitle">
+					Kickstart your pipelines with pre-built, production-ready workflows. Click any template to inspect, import to your self-hosted ieAutom8n instance, or copy its JSON.
+				</p>
+			</div>
+
+			<div class="templates-grid">
+				<div
+					v-for="tpl in CURATED_TEMPLATES"
+					:key="tpl.id"
+					class="template-card"
+					@click="openTemplateModal(tpl)"
+				>
+					<div class="template-card-top">
+						<span class="template-badge">{{ tpl.badge }}</span>
+						<span class="template-node-count">{{ tpl.nodesCount }} Nodes</span>
+					</div>
+
+					<h3 class="template-card-title">{{ tpl.title }}</h3>
+
+					<p class="template-card-desc">{{ tpl.description }}</p>
+
+					<div class="template-tags">
+						<span v-for="tag in tpl.tags" :key="tag" class="template-tag-pill">
+							{{ tag }}
+						</span>
+					</div>
+
+					<div class="template-card-footer">
+						<div class="template-author">
+							<span class="author-icon">👤</span>
+							<span>{{ tpl.author }}</span>
+						</div>
+						<div class="template-actions-btn-group">
+							<button
+								type="button"
+								class="btn-copy-quick"
+								title="Copy JSON"
+								@click.stop="copyTemplateJson(tpl)"
+							>
+								<svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+								</svg>
+							</button>
+							<button type="button" class="btn-use-template">
+								<span>Use template</span>
+								<svg class="icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+								</svg>
+							</button>
 						</div>
 					</div>
 				</div>
@@ -467,6 +576,7 @@ onMounted(() => {
 				</div>
 
 				<div class="footer-links">
+					<a href="#templates">Templates</a>
 					<a href="#features">Features</a>
 					<a href="#solutions">Solutions</a>
 					<a href="#pricing">Pricing</a>
@@ -478,6 +588,112 @@ onMounted(() => {
 				<div class="footer-copy">© 2026 ieEnterprises. All rights reserved.</div>
 			</div>
 		</footer>
+
+		<!-- Use Template Modal -->
+		<teleport to="body">
+			<div v-if="activeTemplate" class="modal-backdrop" @click="closeTemplateModal">
+				<div class="modal-container" @click.stop>
+					<!-- Modal Header -->
+					<div class="modal-header">
+						<h2 class="modal-title">Use template</h2>
+						<button
+							type="button"
+							class="modal-close-btn"
+							aria-label="Close"
+							@click="closeTemplateModal"
+						>
+							<svg viewBox="0 0 24 24" class="close-icon" fill="none" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+					</div>
+
+					<div class="modal-body">
+						<!-- Group 1: Import to destination -->
+						<div class="modal-group">
+							<div class="modal-group-title">Import to an ieAutom8n destination</div>
+
+							<button
+								type="button"
+								class="modal-action-card"
+								@click="importToInstance('ieautom8n.onrender.com')"
+							>
+								<div class="modal-action-icon">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+										<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+										<line x1="6" y1="6" x2="6.01" y2="6" />
+										<line x1="6" y1="18" x2="6.01" y2="18" />
+									</svg>
+								</div>
+								<div class="modal-action-text">
+									Import template to ieautom8n.onrender.com self-hosted instance
+								</div>
+							</button>
+
+							<button
+								type="button"
+								class="modal-action-card"
+								@click="importToInstance('ieautom8n-latest.onrender.com')"
+							>
+								<div class="modal-action-icon">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+										<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+										<line x1="6" y1="6" x2="6.01" y2="6" />
+										<line x1="6" y1="18" x2="6.01" y2="18" />
+									</svg>
+								</div>
+								<div class="modal-action-text">
+									Import template to ieautom8n-latest.onrender.com self-hosted instance
+								</div>
+							</button>
+
+							<button
+								type="button"
+								class="modal-action-card"
+								@click="copyTemplateJson()"
+							>
+								<div class="modal-action-icon">
+									<svg v-if="!copySuccess" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+										<rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+									</svg>
+									<svg v-else viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+										<polyline points="20 6 9 17 4 12" />
+									</svg>
+								</div>
+								<div class="modal-action-text" :class="{ 'text-success': copySuccess }">
+									{{ copySuccess ? '✓ Copied template to clipboard!' : 'Copy template to clipboard (JSON)' }}
+								</div>
+							</button>
+						</div>
+
+						<!-- Group 2: Get started -->
+						<div class="modal-group">
+							<div class="modal-group-title">Get started with ieAutom8n</div>
+
+							<a
+								href="https://docs.n8n.io/hosting/"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="modal-action-card"
+							>
+								<div class="modal-action-icon">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+										<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+									</svg>
+								</div>
+								<div class="modal-action-text">
+									Open self-hosting installation docs
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</teleport>
 	</div>
 </template>
 
@@ -542,20 +758,23 @@ onMounted(() => {
 	text-decoration: none;
 }
 .logo-box {
-	width: 40px;
-	height: 40px;
-	border-radius: 12px;
-	background: #f5f3ff;
-	border: 1px solid rgba(139, 92, 246, 0.3);
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: #ffffff;
+	border: 1.5px solid rgba(139, 92, 246, 0.35);
+	box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 6px;
+	padding: 2px;
+	overflow: hidden;
 }
 .logo-img {
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
+	border-radius: 50%;
+	object-fit: cover;
 }
 .brand-name {
 	font-size: 20px;
@@ -1233,9 +1452,10 @@ onMounted(() => {
 	gap: 8px;
 }
 .footer-logo {
-	width: 24px;
-	height: 24px;
-	object-fit: contain;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	object-fit: cover;
 }
 .footer-title {
 	font-weight: 700;
@@ -1261,5 +1481,282 @@ onMounted(() => {
 .footer-copy {
 	color: #94a3b8;
 	font-size: 12px;
+}
+
+/* Templates Showcase Section */
+.templates-section {
+	padding: 80px 24px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+.templates-grid {
+	margin-top: 48px;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+	gap: 28px;
+}
+.template-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 18px;
+	padding: 28px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+	display: flex;
+	flex-direction: column;
+	cursor: pointer;
+	transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+	&:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 28px rgba(139, 92, 246, 0.12);
+		border-color: #c4b5fd;
+	}
+}
+.template-card-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 14px;
+}
+.template-badge {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 3px 10px;
+	border-radius: 9999px;
+	background: #f5f3ff;
+	border: 1px solid #ddd6fe;
+	color: #7c3aed;
+}
+.template-node-count {
+	font-size: 12px;
+	font-weight: 600;
+	color: #64748b;
+	background: #f1f5f9;
+	padding: 3px 8px;
+	border-radius: 6px;
+}
+.template-card-title {
+	font-size: 19px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0 0 10px;
+	line-height: 1.35;
+}
+.template-card-desc {
+	font-size: 14px;
+	color: #475569;
+	line-height: 1.55;
+	margin: 0 0 18px;
+	flex: 1;
+}
+.template-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 20px;
+}
+.template-tag-pill {
+	font-size: 11px;
+	font-weight: 500;
+	padding: 3px 8px;
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	color: #475569;
+	border-radius: 6px;
+}
+.template-card-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 16px;
+	border-top: 1px solid #f1f5f9;
+}
+.template-author {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: #64748b;
+	font-weight: 500;
+}
+.template-actions-btn-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.btn-copy-quick {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	width: 34px;
+	height: 34px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #64748b;
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s, border-color 0.15s;
+	&:hover {
+		background: #f1f5f9;
+		color: #7c3aed;
+		border-color: #c4b5fd;
+	}
+}
+.btn-use-template {
+	padding: 8px 14px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #fff;
+	background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+	border: none;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+	transition: transform 0.15s, box-shadow 0.15s;
+	&:hover {
+		transform: scale(1.02);
+		box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+	}
+}
+.icon-svg {
+	width: 16px;
+	height: 16px;
+}
+
+/* Use Template Modal */
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.55);
+	backdrop-filter: blur(5px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	z-index: 9999;
+	animation: modalFadeIn 0.2s ease-out;
+}
+.modal-container {
+	background: #ffffff;
+	border-radius: 20px;
+	width: 100%;
+	max-width: 540px;
+	box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.25);
+	padding: 28px 28px 32px;
+	position: relative;
+	animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalFadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes modalSlideUp {
+	from {
+		transform: translateY(12px) scale(0.98);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0) scale(1);
+		opacity: 1;
+	}
+}
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 20px;
+}
+.modal-title {
+	font-size: 22px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0;
+	letter-spacing: -0.01em;
+}
+.modal-close-btn {
+	background: transparent;
+	border: none;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #64748b;
+	cursor: pointer;
+	transition: background 0.15s, color 0.15s;
+	&:hover {
+		background: #f1f5f9;
+		color: #0f172a;
+	}
+}
+.close-icon {
+	width: 20px;
+	height: 20px;
+}
+.modal-group {
+	margin-top: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.modal-group-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #64748b;
+	margin-bottom: 2px;
+}
+.modal-action-card {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 16px 20px;
+	background: #e2e8f0;
+	border: none;
+	border-radius: 14px;
+	text-decoration: none;
+	color: #1e293b;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	width: 100%;
+	text-align: left;
+	transition: background 0.15s, transform 0.1s;
+	&:hover {
+		background: #cbd5e1;
+		transform: translateY(-1px);
+	}
+	&:active {
+		transform: translateY(0);
+	}
+}
+.modal-action-icon {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	color: #475569;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	svg {
+		width: 100%;
+		height: 100%;
+	}
+}
+.modal-action-text {
+	flex: 1;
+	line-height: 1.35;
+}
+.text-success {
+	color: #16a34a;
+	font-weight: 600;
 }
 </style>

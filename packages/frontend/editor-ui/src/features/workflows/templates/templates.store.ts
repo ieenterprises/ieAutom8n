@@ -1,4 +1,5 @@
 import { TEMPLATES_URLS } from '@/app/constants';
+import { findCuratedTemplate } from '@/features/workflows/templates/curatedTemplates';
 import type { INodeUi } from '@/Interface';
 import { useCloudPlanStore } from '@n8n/stores/cloudPlan.store';
 import { getTemplatePathByRole } from '@/experiments/utils';
@@ -209,10 +210,7 @@ export const useTemplatesStore = defineStore(STORES.TEMPLATES, () => {
 		});
 	});
 
-	const websiteTemplateRepositoryURL = computed(
-		() =>
-			`${TEMPLATES_URLS.BASE_WEBSITE_URL}${getTemplatePathByRole(userRole.value)}?${websiteTemplateRepositoryParameters.value.toString()}`,
-	);
+	const websiteTemplateRepositoryURL = computed(() => '/#templates');
 
 	const constructTemplateRepositoryURL = (params: URLSearchParams, category?: string): string => {
 		const baseUrl = category
@@ -437,6 +435,20 @@ export const useTemplatesStore = defineStore(STORES.TEMPLATES, () => {
 	};
 
 	const getWorkflowTemplate = async (templateId: string): Promise<IWorkflowTemplate> => {
+		const curated = findCuratedTemplate(templateId);
+		if (curated) {
+			const cloned = JSON.parse(JSON.stringify(curated.workflow));
+			return {
+				id: curated.id as unknown as number,
+				name: curated.name,
+				workflow: {
+					nodes: (cloned.nodes || []) as unknown as INodeUi[],
+					connections: cloned.connections || {},
+					settings: cloned.settings || {},
+					pinData: cloned.pinData || {},
+				},
+			};
+		}
 		const apiEndpoint: string = settingsStore.templatesHost;
 		const versionCli: string = rootStore.versionCli;
 		return await templatesApi.getWorkflowTemplate(apiEndpoint, templateId, {

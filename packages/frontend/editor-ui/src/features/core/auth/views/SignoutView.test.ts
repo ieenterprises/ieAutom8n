@@ -55,7 +55,7 @@ describe('SignoutView', () => {
 		expect(() => renderComponent()).not.toThrow();
 	});
 
-	it('should perform a standard logout and redirect to signin when OIDC is not the active authentication method', async () => {
+	it('should perform a standard logout and redirect to landing page when OIDC is not the active authentication method', async () => {
 		ssoStore.isDefaultAuthenticationOidc = false;
 		const hrefSpy = vi.spyOn(window.location, 'href', 'set');
 
@@ -63,8 +63,7 @@ describe('SignoutView', () => {
 		await flushPromises();
 
 		expect(usersStore.logout).toHaveBeenCalledWith({ viaOidc: false });
-		expect(router.resolve).toHaveBeenCalled();
-		expect(hrefSpy).toHaveBeenCalledWith(SIGNIN_HREF);
+		expect(hrefSpy).toHaveBeenCalledWith('/');
 	});
 
 	it('should sign out via OIDC and redirect to the RP-initiated logout URL when the backend returns one', async () => {
@@ -82,7 +81,7 @@ describe('SignoutView', () => {
 		expect(router.resolve).not.toHaveBeenCalled();
 	});
 
-	it('should redirect to signin when signing out via OIDC but the session was not OIDC-established', async () => {
+	it('should redirect to landing page when signing out via OIDC but the session was not OIDC-established', async () => {
 		ssoStore.isDefaultAuthenticationOidc = true;
 		usersStore.logout.mockResolvedValue({ redirectUrl: null });
 		const hrefSpy = vi.spyOn(window.location, 'href', 'set');
@@ -91,7 +90,7 @@ describe('SignoutView', () => {
 		await flushPromises();
 
 		expect(usersStore.logout).toHaveBeenCalledWith({ viaOidc: true });
-		expect(hrefSpy).toHaveBeenCalledWith(SIGNIN_HREF);
+		expect(hrefSpy).toHaveBeenCalledWith('/');
 	});
 
 	it('should show an error toast when logout fails', async () => {
