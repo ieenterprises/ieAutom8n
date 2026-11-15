@@ -463,6 +463,16 @@ function startNewThread(): void {
 	void router.push({ name: INSTANCE_AI_VIEW });
 }
 
+async function handleDeleteCurrentThread(): Promise<void> {
+	const currentThread = threadsStore.threadsById.get(props.threadId);
+	if (currentThread) {
+		const deleted = await threadsStore.deleteThread(currentThread);
+		if (deleted) {
+			void router.push({ name: INSTANCE_AI_VIEW });
+		}
+	}
+}
+
 // --- Layout ---
 const threadArea = useTemplateRef<HTMLElement>('threadArea');
 const { width: threadAreaWidth } = useElementSize(threadArea);
@@ -585,6 +595,21 @@ function removeStagedNodes(chipId: string): void {
 							:aria-label="i18n.baseText('instanceAi.thread.new')"
 							data-test-id="assistant-agent-new-thread"
 							@click="startNewThread"
+						/>
+					</N8nTooltip>
+					<N8nTooltip
+						:content="i18n.baseText('instanceAi.sidebar.deleteThread')"
+						placement="bottom"
+						:show-after="TOOLTIP_DELAY_MS"
+					>
+						<N8nIconButton
+							icon="trash-2"
+							variant="ghost"
+							size="small"
+							icon-size="large"
+							:aria-label="i18n.baseText('instanceAi.sidebar.deleteThread')"
+							data-test-id="assistant-agent-delete-thread"
+							@click="handleDeleteCurrentThread"
 						/>
 					</N8nTooltip>
 					<N8nActionDropdown

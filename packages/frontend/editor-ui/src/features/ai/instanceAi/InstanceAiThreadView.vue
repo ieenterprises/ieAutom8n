@@ -30,7 +30,10 @@ import {
 import { useInstanceAiSettingsStore } from './instanceAiSettings.store';
 import { useCanvasPreview } from './useCanvasPreview';
 import { fetchThreadTabs, saveThreadTabs } from './instanceAi.memory.api';
-import { buildInstanceAiAgentPreviewHandoffContext } from './composables/useInstanceAiHandoff';
+import {
+	buildInstanceAiAgentPreviewHandoffContext,
+	clearPendingThreadHandoff,
+} from './composables/useInstanceAiHandoff';
 import { INSTANCE_AI_APP_ID_QUERY } from './constants';
 import type { AgentTestHandoffParams } from './composables/useInstanceAiAgentTestHandoff';
 import {
@@ -721,6 +724,13 @@ async function persistTestAgentOfferDismissal(agentId: string) {
 function handleNewThreadClick() {
 	void router.push({ name: INSTANCE_AI_VIEW });
 }
+
+async function handleDeleteCurrentThread() {
+	if (await store.deleteThread(props.threadId)) {
+		clearPendingThreadHandoff(props.threadId);
+		void router.push({ name: INSTANCE_AI_VIEW });
+	}
+}
 </script>
 
 <template>
@@ -780,6 +790,21 @@ function handleNewThreadClick() {
 								:aria-label="i18n.baseText('instanceAi.thread.new')"
 								data-test-id="instance-ai-embed-new-thread"
 								@click="handleNewThreadClick"
+							/>
+						</N8nTooltip>
+						<N8nTooltip
+							:content="i18n.baseText('instanceAi.sidebar.deleteThread')"
+							placement="bottom"
+							:show-after="TOOLTIP_DELAY_MS"
+						>
+							<N8nIconButton
+								icon="trash-2"
+								variant="ghost"
+								size="small"
+								icon-size="large"
+								:aria-label="i18n.baseText('instanceAi.sidebar.deleteThread')"
+								data-test-id="instance-ai-delete-thread"
+								@click="handleDeleteCurrentThread"
 							/>
 						</N8nTooltip>
 						<N8nIconButton

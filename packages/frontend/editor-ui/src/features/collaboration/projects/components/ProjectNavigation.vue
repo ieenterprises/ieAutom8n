@@ -10,7 +10,7 @@ import { N8nIcon, N8nMenuItem, N8nText } from '@n8n/design-system';
 import type { IMenuItem } from '@n8n/design-system';
 import { useI18n } from '@n8n/i18n';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useProjectsStore } from '../projects.store';
 import { DEFAULT_PROJECT_ICON } from '../projects.constants';
 import type { ProjectListItem } from '../projects.types';
@@ -22,6 +22,7 @@ import {
 	INSTANCE_AI_THREAD_VIEW,
 	INSTANCE_AI_VIEW,
 } from '@/features/ai/instanceAi/constants';
+import { clearPendingThreadHandoff } from '@/features/ai/instanceAi/composables/useInstanceAiHandoff';
 import { useInstanceAiAvailable } from '@/features/ai/instanceAi/composables/useInstanceAiAvailability';
 import { useInstanceAiStore } from '@/features/ai/instanceAi/instanceAi.store';
 import { INBOX_VIEW } from '@n8n/frontend-module-inbox';
@@ -57,6 +58,7 @@ const props = defineProps<Props>();
 
 const locale = useI18n();
 const route = useRoute();
+const router = useRouter();
 const globalEntityCreation = useGlobalEntityCreation();
 
 const projectsStore = useProjectsStore();
@@ -228,6 +230,33 @@ function onChatItemClick(item: RecentChatItem): void {
 		item: 'chat',
 		chatType: item.kind === 'agent' ? 'agent' : 'assistant',
 	});
+}
+
+async function onDeleteChat(item: RecentChatItem): Promise<void> {
+	let deleted = false;
+	if (item.kind === 'assistant-agent') {
+		deleted = await assistantAgentThreadsStore.deleteThread(item.thread);
+	} else if (item.kind === 'agent') {
+		deleted = await agentThreadsStore.deleteThread(item.thread);
+	} else {
+		deleted = await instanceAiStore.deleteThread(item.thread.id);
+		if (deleted) {
+			clearPendingThreadHandoff(item.thread.id);
+		}
+	}
+
+	if (!deleted) return;
+
+	const currentThreadId =
+		route.name === INSTANCE_AI_THREAD_VIEW
+			? (route.params.threadId as string)
+			: route.name === AGENT_N8N_CHAT_VIEW
+				? (route.params.agentThreadId as string)
+				: undefined;
+
+	if (currentThreadId === item.thread.id) {
+		void router.push({ name: INSTANCE_AI_VIEW });
+	}
 }
 
 const isInboxVisible = computed(() => settingsStore.settings.inbox?.enabled === true);
@@ -405,17 +434,31 @@ onBeforeUnmount(() => {
 			</div>
 			<template v-if="!instanceAiChatsCollapsed">
 				<div :class="$style.instanceAiChatItems">
-					<N8nMenuItem
+					<div
 						v-for="item in recentChats"
 						:key="item.thread.id"
-						:item="getChatMenuItem(item)"
-						scroll-label-on-overflow
-						@click="onChatItemClick(item)"
+						:class="[$style.chatItem, props.collapsed && $style.collapsed]"
 					>
-						<template v-if="isAgentsN8nChatFlag" #icon>
-							<RecentChatIcon :item="item" />
-						</template>
-					</N8nMenuItem>
+						<N8nMenuItem
+							:item="getChatMenuItem(item)"
+							scroll-label-on-overflow
+							@click="onChatItemClick(item)"
+						>
+							<template v-if="isAgentsN8nChatFlag" #icon>
+								<RecentChatIcon :item="item" />
+							</template>
+						</N8nMenuItem>
+						<button
+							v-if="!props.collapsed"
+							:class="$style.deleteChatButton"
+							:aria-label="locale.baseText('instanceAi.sidebar.deleteThread')"
+							:title="locale.baseText('instanceAi.sidebar.deleteThread')"
+							data-test-id="chat-delete-button"
+							@click.stop.prevent="onDeleteChat(item)"
+						>
+							<N8nIcon icon="trash-2" size="small" />
+						</button>
+					</div>
 				</div>
 			</template>
 		</div>
@@ -685,6 +728,53 @@ onBeforeUnmount(() => {
 	&:hover,
 	&:focus-visible {
 		color: var(--color--text);
+	}
+}
+
+.chatItem {
+	position: relative;
+
+	&:hover .deleteChatButton,
+	.deleteChatButton:focus-visible {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	&:not(.collapsed):hover a[role='menuitem'] {
+		background-color: var(--color--background--light-1);
+		color: var(--color--text--shade-1);
+		padding-right: var(--spacing--xl);
+	}
+}
+
+.deleteChatButton {
+	position: absolute;
+	right: var(--spacing--4xs);
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--spacing--5xs);
+	background: none;
+	border: none;
+	color: var(--color--text--tint-2);
+	cursor: pointer;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s ease, color 0.15s ease;
+	border-radius: var(--border-radius--base);
+
+	&:hover,
+	&:focus-visible {
+		color: var(--color--danger, #e02424);
+	}
+}
+
+@media (hover: none) {
+	.deleteChatButton {
+		opacity: 1;
+		pointer-events: auto;
 	}
 }
 </style>
