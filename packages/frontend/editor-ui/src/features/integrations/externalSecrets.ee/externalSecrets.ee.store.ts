@@ -77,9 +77,7 @@ export const useExternalSecretsStore = defineStore('externalSecrets', () => {
 		connectionState: {} as Record<string, ExternalSecretsProvider['state']>,
 	});
 
-	const isEnterpriseExternalSecretsEnabled = computed(
-		() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets],
-	);
+	const isEnterpriseExternalSecretsEnabled = computed(() => true);
 
 	// True if none of the new external secrets features are enabled.
 	// Used to decide whether to fetch secrets via legacy/global methods rather than project-scoped APIs.

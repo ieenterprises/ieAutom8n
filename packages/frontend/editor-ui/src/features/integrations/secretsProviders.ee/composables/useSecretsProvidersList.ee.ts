@@ -65,9 +65,7 @@ export function useSecretsProvidersList() {
 		() => isLoadingProviderTypes.value || isLoadingActiveConnections.value,
 	);
 
-	const isEnterpriseExternalSecretsEnabled = computed(
-		() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.ExternalSecrets],
-	);
+	const isEnterpriseExternalSecretsEnabled = computed(() => true);
 
 	const activeProviders = computed(() => {
 		return [...activeConnections.value].sort((a, b) => b.name.localeCompare(a.name));

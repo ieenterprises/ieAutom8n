@@ -38,14 +38,6 @@ export class MFAController {
 			);
 		}
 
-		if (req.body.enforce && !(req.authInfo?.usedMfa ?? false)) {
-			// The current user tries to enforce MFA, but does not have
-			// MFA set up for them self. We are forbidding this, to
-			// help the user not lock them selfs out.
-			throw new BadRequestError(
-				'You must enable two-factor authentication on your own account before enforcing it for all users',
-			);
-		}
 		await this.mfaService.enforceMFA(req.body.enforce);
 
 		this.eventService.emit('instance-policies-updated', {

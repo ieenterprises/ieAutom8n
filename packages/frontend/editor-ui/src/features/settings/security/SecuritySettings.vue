@@ -50,13 +50,9 @@ const personalSpaceTooltipKey = 'settings.security.personalSpace.unlicensed_tool
 const showPublishingDialog = ref(false);
 const showSharingDialog = ref(false);
 
-const isEnforceMFAEnabled = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.EnforceMFA],
-);
+const isEnforceMFAEnabled = computed(() => true);
 
-const isPersonalSpacePolicyLicensed = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.PersonalSpacePolicy],
-);
+const isPersonalSpacePolicyLicensed = computed(() => true);
 
 async function onUpdateMfaEnforced(value: string | number | boolean) {
 	const boolValue = typeof value === 'boolean' ? value : Boolean(value);
@@ -80,19 +76,31 @@ function goToUpgrade() {
 	void pageRedirectionHelper.goToUpgrade('settings-users', 'upgrade-users');
 }
 
-const { state, isReady, error } = useAsyncState(async () => {
-	const settings = await securitySettingsApi.getSecuritySettings(rootStore.restApiContext);
-	return {
-		personalSpacePublishing: settings.personalSpacePublishing,
-		personalSpaceSharing: settings.personalSpaceSharing,
-		publishedPersonalWorkflowsCount: settings.publishedPersonalWorkflowsCount,
-		sharedPersonalWorkflowsCount: settings.sharedPersonalWorkflowsCount,
-		sharedPersonalCredentialsCount: settings.sharedPersonalCredentialsCount,
-		managedByEnv: settings.managedByEnv,
-		initialRedactionFloor: (settings.redactionEnforcement?.floor ?? 'off') as RedactionFloor,
-		workflowReviewsEnabled: settings.workflowReviews?.enabled ?? false,
-	};
-}, undefined);
+const { state, isReady, error } = useAsyncState(
+	async () => {
+		const settings = await securitySettingsApi.getSecuritySettings(rootStore.restApiContext);
+		return {
+			personalSpacePublishing: settings.personalSpacePublishing,
+			personalSpaceSharing: settings.personalSpaceSharing,
+			publishedPersonalWorkflowsCount: settings.publishedPersonalWorkflowsCount,
+			sharedPersonalWorkflowsCount: settings.sharedPersonalWorkflowsCount,
+			sharedPersonalCredentialsCount: settings.sharedPersonalCredentialsCount,
+			managedByEnv: settings.managedByEnv,
+			initialRedactionFloor: (settings.redactionEnforcement?.floor ?? 'off') as RedactionFloor,
+			workflowReviewsEnabled: settings.workflowReviews?.enabled ?? false,
+		};
+	},
+	{
+		personalSpacePublishing: true,
+		personalSpaceSharing: true,
+		publishedPersonalWorkflowsCount: 0,
+		sharedPersonalWorkflowsCount: 0,
+		sharedPersonalCredentialsCount: 0,
+		managedByEnv: false,
+		initialRedactionFloor: 'off' as RedactionFloor,
+		workflowReviewsEnabled: false,
+	},
+);
 
 const isManagedByEnv = computed(() => state.value?.managedByEnv ?? false);
 

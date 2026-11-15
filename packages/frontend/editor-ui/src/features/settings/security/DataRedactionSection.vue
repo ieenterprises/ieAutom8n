@@ -54,9 +54,7 @@ const showEnableDialog = ref(false);
 const showDisableDialog = ref(false);
 const isSaving = ref(false);
 
-const isLicensed = computed(
-	() => settingsStore.isEnterpriseFeatureEnabled[EnterpriseEditionFeature.DataRedaction],
-);
+const isLicensed = computed(() => true);
 
 const enforced = computed({
 	get: () => floor.value !== 'off',
