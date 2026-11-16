@@ -667,6 +667,9 @@ async function completeChatGptSignIn(): Promise<void> {
 			throw new Error('ChatGPT sign-in did not return an access token.');
 		}
 		modelApiKey.value = data.accessToken;
+		if (!modelName.value || modelName.value === 'gpt-6.1-sol' || modelName.value === 'gpt-6-astra') {
+			modelName.value = 'gpt-4o';
+		}
 		isSigningInChatGpt.value = false;
 		chatGptPendingState.value = '';
 		chatGptAuthUrl.value = '';

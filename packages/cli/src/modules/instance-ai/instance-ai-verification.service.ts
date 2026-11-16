@@ -133,9 +133,33 @@ export class InstanceAiVerificationService {
 				!connection && !request.modelName && this.settingsService.isProxyEnabled()
 					? this.settingsService.getConfiguredModelId().split('/', 1)[0] || null
 					: modelProviderOf(modelConfig);
+			const startedAt = performance.now();
+			const rawApiKey = connectionString(request.connection, 'apiKey');
+			const rawUrl = connectionString(request.connection, 'url') ?? 'https://api.openai.com/v1';
+			const isChatGptJwt =
+				request.connection?.type === 'openAiApi' &&
+				!!rawApiKey &&
+				rawApiKey.startsWith('eyJ') &&
+				rawApiKey.split('.').length === 3 &&
+				rawUrl.includes('api.openai.com');
+
+			if (isChatGptJwt) {
+				const modelsRes = await fetch('https://api.openai.com/v1/models', {
+					method: 'GET',
+					headers: { Authorization: `Bearer ${rawApiKey}` },
+					signal: AbortSignal.timeout(VERIFICATION_TIMEOUT_MS),
+				});
+				if (!modelsRes.ok) {
+					const errText = await modelsRes.text().catch(() => modelsRes.statusText);
+					throw Object.assign(new Error(errText || `HTTP ${modelsRes.status}`), {
+						status: modelsRes.status,
+					});
+				}
+				return { ok: true, latencyMs: Math.round(performance.now() - startedAt) };
+			}
+
 			const { createModel } = await import('@n8n/agents');
 			const { generateText } = await import('ai');
-			const startedAt = performance.now();
 			await generateText({
 				model: createModel(modelConfig, createAiProxyFetch(this.outboundHttp)),
 				prompt: 'Reply with OK.',
