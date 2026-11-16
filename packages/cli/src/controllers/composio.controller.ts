@@ -369,4 +369,47 @@ export class ComposioController {
 </body>
 </html>`);
 	}
+
+	@Get('/openrouter-callback', { skipAuth: true })
+	handleOpenRouterCallback(req: Request, res: Response) {
+		const code = String(req.query.code ?? '');
+		const error = String(req.query.error ?? '');
+
+		const payload = JSON.stringify({
+			type: 'openrouter:oauth-complete',
+			code,
+			error,
+		}).replaceAll('<', '\\u003c');
+
+		res.setHeader('Content-Type', 'text/html; charset=utf-8');
+		return res.send(`<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>OpenRouter Connected · ieAutom8n</title>
+	<style>
+		body { font-family: system-ui, -apple-system, sans-serif; display: grid; place-items: center; min-height: 100vh; margin: 0; background: #fafafa; color: #18181b; }
+		.card { text-align: center; padding: 32px; max-width: 360px; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+		h1 { font-size: 18px; margin: 0 0 8px; }
+		p { font-size: 14px; color: #52525b; margin: 0; }
+	</style>
+</head>
+<body>
+	<div class="card">
+		<h1>${error || !code ? 'OpenRouter sign-in failed' : 'Connected to OpenRouter'}</h1>
+		<p>${error || !code ? 'Please close this window and try again.' : 'Returning to ieAutom8n...'}</p>
+	</div>
+	<script>
+		(function () {
+			try {
+				if (window.opener) {
+					window.opener.postMessage(${payload}, window.location.origin);
+				}
+			} catch (e) {}
+			setTimeout(function () { window.close(); }, 400);
+		})();
+	</script>
+</body>
+</html>`);
+	}
 }

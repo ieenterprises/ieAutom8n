@@ -365,10 +365,13 @@ async function hydrateModel(generation: number, rememberProvider = true): Promis
 	if (generation !== hydrationGeneration) return;
 	modelApiKey.value = readString(data, 'apiKey');
 	modelBaseUrl.value = readString(data, 'url');
-	modelProvider.value =
+	const matchedProvider =
 		assigned.type === 'openAiApi' && modelBaseUrl.value
-			? 'custom'
+			? (INSTANCE_AI_MODEL_PROVIDERS.find(
+					(p) => p.defaultBaseUrl && modelBaseUrl.value.startsWith(p.defaultBaseUrl),
+				)?.id ?? 'custom')
 			: modelProviderForCredentialType(assigned.type);
+	modelProvider.value = matchedProvider;
 	if (rememberProvider) hydratedModelProvider.value = modelProvider.value;
 }
 
@@ -501,9 +504,94 @@ function selectSearchProvider(provider: unknown): void {
 function modelConnection(): InstanceAiConnectionUpdate {
 	const data: Record<string, unknown> = {};
 	if (modelApiKey.value.trim()) data.apiKey = modelApiKey.value.trim();
-	if (modelProvider.value === 'custom') data.url = modelBaseUrl.value.trim();
+	if (modelProvider.value === 'custom') {
+		data.url = modelBaseUrl.value.trim();
+	} else if (modelConfig.value.defaultBaseUrl) {
+		data.url = modelConfig.value.defaultBaseUrl;
+	}
 	if (modelProvider.value === 'google') data.host = 'https://generativelanguage.googleapis.com';
 	return { type: modelConfig.value.credentialType, data };
+}
+
+const isSigningInOpenRouter = ref(false);
+
+async function signInWithOpenRouter(): Promise<void> {
+	errorMessage.value = '';
+	isSigningInOpenRouter.value = true;
+
+	const randomBytes = new Uint8Array(32);
+	crypto.getRandomValues(randomBytes);
+	const toBase64Url = (buf: Uint8Array) =>
+		btoa(String.fromCharCode(...buf))
+			.replaceAll('+', '-')
+			.replaceAll('/', '_')
+			.replaceAll('=', '');
+	const codeVerifier = toBase64Url(randomBytes);
+	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+	const codeChallenge = toBase64Url(new Uint8Array(digest));
+
+	const callbackUrl = `${window.location.origin}/rest/composio/openrouter-callback`;
+	const authUrl = `https://openrouter.ai/auth?callback_url=${encodeURIComponent(callbackUrl)}&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256`;
+
+	const width = 520;
+	const height = 680;
+	const left = window.screenX + (window.outerWidth - width) / 2;
+	const top = window.screenY + (window.outerHeight - height) / 2;
+	const popup = window.open(
+		authUrl,
+		'openrouter_oauth_popup',
+		`width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`,
+	);
+
+	if (!popup) {
+		isSigningInOpenRouter.value = false;
+		errorMessage.value = 'Please allow popups for ieAutom8n to sign in with OpenRouter.';
+		return;
+	}
+
+	const onMessage = async (event: MessageEvent) => {
+		if (event.origin !== window.location.origin) return;
+		const msg = event.data as { type?: string; code?: string; error?: string } | undefined;
+		if (!msg || msg.type !== 'openrouter:oauth-complete') return;
+
+		window.removeEventListener('message', onMessage);
+		try {
+			if (!popup.closed) popup.close();
+		} catch {}
+
+		if (msg.error || !msg.code) {
+			isSigningInOpenRouter.value = false;
+			errorMessage.value = msg.error || 'OpenRouter sign-in was cancelled.';
+			return;
+		}
+
+		try {
+			const res = await fetch('https://openrouter.ai/api/v1/auth/keys', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					code: msg.code,
+					code_verifier: codeVerifier,
+					code_challenge_method: 'S256',
+				}),
+			});
+			if (!res.ok) {
+				throw new Error(`OpenRouter key exchange failed (${res.status})`);
+			}
+			const data = (await res.json()) as { key?: string };
+			if (!data.key) {
+				throw new Error('OpenRouter did not return an API key.');
+			}
+			modelApiKey.value = data.key;
+		} catch (err) {
+			errorMessage.value =
+				err instanceof Error ? err.message : 'Failed to complete OpenRouter sign-in.';
+		} finally {
+			isSigningInOpenRouter.value = false;
+		}
+	};
+
+	window.addEventListener('message', onMessage);
 }
 
 function sandboxConnection(): InstanceAiConnectionUpdate | undefined {
@@ -859,6 +947,26 @@ const stepLede = computed(() => {
 								data-test-id="assistant-model-base-url"
 							/>
 						</N8nInputLabel>
+
+						<div
+							v-if="
+								modelProvider === 'openrouter' &&
+								!modelConnectionLocked &&
+								!readOnly &&
+								!selectedExistingCredentialId
+							"
+							style="margin-bottom: 8px"
+						>
+							<N8nButton
+								variant="solid"
+								size="medium"
+								:loading="isSigningInOpenRouter"
+								style="width: 100%"
+								@click="signInWithOpenRouter"
+							>
+								Sign in with OpenRouter (1-Click)
+							</N8nButton>
+						</div>
 
 						<N8nInputLabel
 							:class="$style.compactLabel"

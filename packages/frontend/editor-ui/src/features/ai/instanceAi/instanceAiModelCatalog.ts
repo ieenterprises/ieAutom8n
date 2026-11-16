@@ -78,7 +78,20 @@ export function getInstanceAiModelOptions(
 	currentModel: string,
 ): InstanceAiModelOption[] {
 	if (provider === 'custom') return [];
-	return getOptionsForProviders([provider], catalog, currentModel);
+	if ((INSTANCE_AI_CATALOG_PROVIDERS as readonly string[]).includes(provider)) {
+		return getOptionsForProviders([provider as InstanceAiCatalogProvider], catalog, currentModel);
+	}
+	const curated = INSTANCE_AI_CURATED_MODELS[provider] ?? [];
+	const seen = new Set<string>();
+	const options: InstanceAiModelOption[] = curated.map((id, index) => {
+		seen.add(id);
+		return { id, name: id, recommended: index === 0 };
+	});
+	const current = currentModel.trim();
+	if (current && !seen.has(current)) {
+		options.push({ id: current, name: current, recommended: false });
+	}
+	return options;
 }
 
 export function getAllInstanceAiModelOptions(
