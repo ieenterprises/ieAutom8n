@@ -481,7 +481,6 @@ export class ComposioController {
 		const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
 		const state = randomBytes(24).toString('base64url');
 		const nonce = randomBytes(24).toString('base64url');
-		const hostId = req.user?.id || randomUUID();
 
 		this.pendingChatGptFlows.set(state, { codeVerifier, nonce, createdAt: now });
 
@@ -498,8 +497,6 @@ export class ComposioController {
 		authUrl.searchParams.set('code_challenge_method', 'S256');
 		authUrl.searchParams.set('state', state);
 		authUrl.searchParams.set('nonce', nonce);
-		authUrl.searchParams.set('agent_name_hint', 'ieAutom8n');
-		authUrl.searchParams.set('ext_agent_host_id', hostId);
 
 		return res.json({
 			data: {
