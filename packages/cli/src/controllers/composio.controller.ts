@@ -487,6 +487,8 @@ export class ComposioController {
 		const authUrl = new URL('https://auth.openai.com/api/accounts/authorize');
 		authUrl.searchParams.set('response_type', 'code');
 		authUrl.searchParams.set('client_id', 'dynamic_agent_client');
+		authUrl.searchParams.set('agent_name_hint', 'ieAutom8n');
+		authUrl.searchParams.set('ext_agent_host_id', `urn:uuid:${randomUUID()}`);
 		authUrl.searchParams.set('redirect_uri', 'http://127.0.0.1:1455/auth/callback');
 		authUrl.searchParams.set(
 			'scope',
@@ -553,11 +555,15 @@ export class ComposioController {
 				redirect_uri: 'http://127.0.0.1:1455/auth/callback',
 				client_id: issuedClientId,
 				code_verifier: pending.codeVerifier,
+				resource: 'https://api.openai.com/v1',
 			});
 
-			const tokenRes = await fetch('https://auth.openai.com/oauth/token', {
+			const tokenRes = await fetch('https://auth.openai.com/api/accounts/oauth/token', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/x-www-form-urlencoded',
+				},
 				body: tokenParams.toString(),
 			});
 
