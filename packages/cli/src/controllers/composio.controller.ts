@@ -6,8 +6,66 @@ import { Cipher } from 'n8n-core';
 
 interface ComposioConnectBody {
 	toolkit: string;
+	credentialTypeName?: string;
+	serviceName?: string;
 	callbackOrigin?: string;
 }
+
+interface ComposioToolkitItem {
+	slug: string;
+	name: string;
+}
+
+const CREDENTIAL_TO_TOOLKIT_OVERRIDES: Record<string, string> = {
+	gmailoauth2: 'gmail',
+	googleoauth2api: 'gmail',
+	googlesheetsoauth2api: 'googlesheets',
+	googlesheetstriggeroauth2api: 'googlesheets',
+	googledriveoauth2api: 'googledrive',
+	googlecalendaroauth2api: 'googlecalendar',
+	googledocsoauth2api: 'googledocs',
+	googleslidesoauth2api: 'googleslides',
+	googletasksoauth2api: 'googletasks',
+	googlecontactsoauth2api: 'googlecontacts',
+	googleadsoauth2api: 'googleads',
+	googleanalyticsoauth2: 'google_analytics',
+	googlebigqueryoauth2api: 'google_bigquery',
+	googlechatoauth2api: 'google_chat',
+	microsoftoutlookoauth2api: 'outlook',
+	microsoftonedriveoauth2api: 'one_drive',
+	microsoftteamsoauth2api: 'microsoft_teams',
+	microsoftteamsmanageroauth2api: 'microsoft_teams',
+	microsoftexceloauth2api: 'excel',
+	microsoftsharepointoauth2api: 'share_point',
+	microsofttodooauth2api: 'microsoft_todo',
+	microsoftonenoteoauth2api: 'one_note',
+	microsoftdynamicsoauth2api: 'dynamics365',
+	slackoauth2api: 'slack',
+	githuboauth2api: 'github',
+	notionoauth2api: 'notion',
+	linearoauth2api: 'linear',
+	jiraoauth2api: 'jira',
+	jirasoftwarecloudoauth2api: 'jira',
+	hubspotoauth2api: 'hubspot',
+	salesforceoauth2api: 'salesforce',
+	airtableoauth2api: 'airtable',
+	asanaoauth2api: 'asana',
+	trellooauth2api: 'trello',
+	discordoauth2api: 'discord',
+	zoomoauth2api: 'zoom',
+	dropboxoauth2api: 'dropbox',
+	boxoauth2api: 'box',
+	quickbooksoauth2api: 'quickbooks',
+	xerooauth2api: 'xero',
+	zohooauth2api: 'zoho',
+	mailchimpoauth2api: 'mailchimp',
+	zendeskoauth2api: 'zendesk',
+	intercomoauth2api: 'intercom',
+	figmaoauth2api: 'figma',
+	shopifyoauth2api: 'shopify',
+	stripeoauth2api: 'stripe',
+	spotifyoauth2api: 'spotify',
+};
 
 @RestController('/composio')
 export class ComposioController {
@@ -72,12 +130,82 @@ export class ComposioController {
 		return `${proto}://${host}`;
 	}
 
+	private cachedToolkits: { items: ComposioToolkitItem[]; fetchedAt: number } | null = null;
+
+	private async getComposioToolkits(
+		baseUrl: string,
+		headers: Record<string, string>,
+	): Promise<ComposioToolkitItem[]> {
+		if (this.cachedToolkits && Date.now() - this.cachedToolkits.fetchedAt < 10 * 60_000) {
+			return this.cachedToolkits.items;
+		}
+		try {
+			const res = await fetch(`${baseUrl}/api/v3/toolkits?limit=1000`, {
+				method: 'GET',
+				headers,
+			});
+			if (!res.ok) return this.cachedToolkits?.items ?? [];
+			const json = (await res.json()) as { items?: ComposioToolkitItem[] };
+			const items = json.items ?? [];
+			this.cachedToolkits = { items, fetchedAt: Date.now() };
+			return items;
+		} catch {
+			return this.cachedToolkits?.items ?? [];
+		}
+	}
+
+	private async resolveToolkitSlug(
+		baseUrl: string,
+		headers: Record<string, string>,
+		rawToolkit: string,
+		credentialTypeName?: string,
+		serviceName?: string,
+	): Promise<string> {
+		const credKey = credentialTypeName?.trim().toLowerCase() ?? '';
+		if (credKey && CREDENTIAL_TO_TOOLKIT_OVERRIDES[credKey]) {
+			return CREDENTIAL_TO_TOOLKIT_OVERRIDES[credKey];
+		}
+
+		const toolkits = await this.getComposioToolkits(baseUrl, headers);
+		if (toolkits.length === 0) return rawToolkit;
+
+		const candidates = new Set<string>();
+		if (rawToolkit) candidates.add(rawToolkit.toLowerCase());
+		if (credKey) {
+			candidates.add(credKey.replace(/oauth2api|oauth2|oauth|api$/gi, ''));
+		}
+		if (serviceName) {
+			const svc = serviceName.trim().toLowerCase();
+			candidates.add(svc);
+			candidates.add(svc.replace(/\s+/g, '_'));
+			candidates.add(svc.replace(/\s+/g, ''));
+			candidates.add(svc.replace(/^(microsoft|google)\s+/i, '').trim());
+		}
+
+		// 1. Exact slug match
+		for (const c of candidates) {
+			const hit = toolkits.find((t) => t.slug.toLowerCase() === c);
+			if (hit) return hit.slug;
+		}
+
+		// 2. Normalized slug or name match (ignore underscores/hyphens/spaces)
+		const norm = (s: string) => s.toLowerCase().replace(/[_-\s]+/g, '');
+		for (const c of candidates) {
+			const nc = norm(c);
+			if (!nc) continue;
+			const hit = toolkits.find((t) => norm(t.slug) === nc || norm(t.name) === nc);
+			if (hit) return hit.slug;
+		}
+
+		return rawToolkit;
+	}
+
 	@Post('/connect')
 	async createConnectLink(req: AuthenticatedRequest, res: Response) {
 		try {
 			const body = (req.body ?? {}) as Partial<ComposioConnectBody>;
-			const toolkit = body.toolkit?.trim().toLowerCase();
-			if (!toolkit) {
+			const rawToolkit = body.toolkit?.trim().toLowerCase() ?? '';
+			if (!rawToolkit && !body.credentialTypeName && !body.serviceName) {
 				return res.status(400).json({ message: 'Toolkit slug is required.' });
 			}
 
@@ -86,6 +214,14 @@ export class ComposioController {
 				'x-api-key': apiKey,
 				'Content-Type': 'application/json',
 			};
+
+			const toolkit = await this.resolveToolkitSlug(
+				baseUrl,
+				headers,
+				rawToolkit,
+				body.credentialTypeName,
+				body.serviceName,
+			);
 
 			// 1. Find existing auth config for this toolkit
 			let authConfigId: string | undefined;

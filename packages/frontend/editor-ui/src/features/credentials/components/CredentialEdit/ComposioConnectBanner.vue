@@ -25,15 +25,21 @@ const isConnecting = ref(false);
 const showModal = ref(false);
 const errorMessage = ref('');
 const pendingAccountId = ref<string | undefined>(undefined);
+const resolvedToolkit = ref<string | undefined>(undefined);
 
 const appSlug = computed(() => {
 	const name = props.credentialTypeName.toLowerCase();
 	if (name.includes('gmail')) return 'gmail';
 	if (name.includes('sheet')) return 'googlesheets';
-	if (name.includes('drive')) return 'googledrive';
+	if (name.includes('drive') && !name.includes('onedrive')) return 'googledrive';
 	if (name.includes('calendar')) return 'googlecalendar';
 	if (name.includes('docs')) return 'googledocs';
+	if (name.includes('outlook')) return 'outlook';
+	if (name.includes('onedrive')) return 'one_drive';
 	if (name.includes('onenote')) return 'one_note';
+	if (name.includes('teams')) return 'microsoft_teams';
+	if (name.includes('sharepoint')) return 'share_point';
+	if (name.includes('todo')) return 'microsoft_todo';
 	if (name.includes('excel')) return 'excel';
 	if (name.includes('slack')) return 'slack';
 	if (name.includes('github')) return 'github';
@@ -46,9 +52,8 @@ const appSlug = computed(() => {
 	if (name.includes('salesforce')) return 'salesforce';
 	if (name.includes('discord')) return 'discord';
 	if (name.includes('airtable')) return 'airtable';
-	if (name.includes('microsoft')) return 'microsoft';
-	if (name.includes('google')) return 'google';
-	return name.replace(/oauth2api|oauth2|api$/gi, '') || 'composio';
+	if (name.includes('google')) return 'gmail';
+	return name.replace(/oauth2api|oauth2|oauth|api$/gi, '') || 'composio';
 });
 
 let popupWindow: Window | null = null;
@@ -97,7 +102,7 @@ function onOAuthMessage(event: MessageEvent) {
 	showModal.value = false;
 	emit('connect', {
 		connectedAccountId: data.connectedAccountId || pendingAccountId.value,
-		toolkit: data.toolkit || appSlug.value,
+		toolkit: data.toolkit || resolvedToolkit.value || appSlug.value,
 	});
 }
 
@@ -128,10 +133,13 @@ async function startConnect() {
 			| undefined
 		>(rootStore.restApiContext, 'POST', '/composio/connect', {
 			toolkit: appSlug.value,
+			credentialTypeName: props.credentialTypeName,
+			serviceName: props.serviceName,
 			callbackOrigin: window.location.origin,
 		});
 
 		pendingAccountId.value = response?.connectedAccountId;
+		resolvedToolkit.value = response?.toolkit || appSlug.value;
 
 		if (!response?.redirectUrl) {
 			throw new Error('Composio did not return a sign-in URL.');
@@ -165,7 +173,7 @@ function finishConnect() {
 	showModal.value = false;
 	emit('connect', {
 		connectedAccountId: pendingAccountId.value,
-		toolkit: appSlug.value,
+		toolkit: resolvedToolkit.value || appSlug.value,
 	});
 }
 

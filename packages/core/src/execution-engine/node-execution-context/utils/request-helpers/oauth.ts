@@ -400,11 +400,15 @@ function resolveComposioToolkitFromCredType(credentialsType: string, clientId?: 
 	const lower = credentialsType.toLowerCase();
 	if (lower.includes('gmail')) return 'gmail';
 	if (lower.includes('sheet')) return 'googlesheets';
-	if (lower.includes('drive')) return 'googledrive';
+	if (lower.includes('drive') && !lower.includes('onedrive')) return 'googledrive';
 	if (lower.includes('calendar')) return 'googlecalendar';
 	if (lower.includes('docs')) return 'googledocs';
 	if (lower.includes('onenote')) return 'one_note';
 	if (lower.includes('outlook')) return 'outlook';
+	if (lower.includes('onedrive')) return 'one_drive';
+	if (lower.includes('teams')) return 'microsoft_teams';
+	if (lower.includes('sharepoint')) return 'share_point';
+	if (lower.includes('todo')) return 'microsoft_todo';
 	if (lower.includes('excel')) return 'excel';
 	if (lower.includes('slack')) return 'slack';
 	if (lower.includes('github')) return 'github';
