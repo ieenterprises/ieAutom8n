@@ -96,6 +96,7 @@ const emit = defineEmits<{
 const i18n = useI18n();
 const store = useInstanceAiSettingsStore();
 const credentialsStore = useCredentialsStore();
+const rootStore = useRootStore();
 const { credentialTestError, testSavedCredential } = useInstanceCredentialTest();
 
 const busy = ref(false);
@@ -516,9 +517,10 @@ function modelConnection(): InstanceAiConnectionUpdate {
 }
 
 const isSigningInOpenRouter = ref(false);
+const oauthErrorMessage = ref('');
 
 async function signInWithOpenRouter(): Promise<void> {
-	errorMessage.value = '';
+	oauthErrorMessage.value = '';
 	isSigningInOpenRouter.value = true;
 
 	const randomBytes = new Uint8Array(32);
@@ -547,11 +549,10 @@ async function signInWithOpenRouter(): Promise<void> {
 
 	if (!popup) {
 		isSigningInOpenRouter.value = false;
-		errorMessage.value = 'Please allow popups for ieAutom8n to sign in with OpenRouter.';
+		oauthErrorMessage.value = 'Please allow popups for ieAutom8n to sign in with OpenRouter.';
 		return;
 	}
 
-	const rootStore = useRootStore();
 	let handled = false;
 	let bc: BroadcastChannel | null = null;
 
@@ -569,7 +570,7 @@ async function signInWithOpenRouter(): Promise<void> {
 
 		if (msg.error || !msg.code) {
 			isSigningInOpenRouter.value = false;
-			errorMessage.value = msg.error || 'OpenRouter sign-in was cancelled.';
+			oauthErrorMessage.value = msg.error || 'OpenRouter sign-in was cancelled.';
 			return;
 		}
 
@@ -588,7 +589,7 @@ async function signInWithOpenRouter(): Promise<void> {
 			}
 			modelApiKey.value = data.key;
 		} catch (err) {
-			errorMessage.value =
+			oauthErrorMessage.value =
 				err instanceof Error ? err.message : 'Failed to complete OpenRouter sign-in.';
 		} finally {
 			isSigningInOpenRouter.value = false;
@@ -615,9 +616,8 @@ const chatGptAuthUrl = ref('');
 const chatGptCallbackUrl = ref('');
 
 async function startChatGptSignIn(): Promise<void> {
-	errorMessage.value = '';
+	oauthErrorMessage.value = '';
 	isSigningInChatGpt.value = true;
-	const rootStore = useRootStore();
 	const popup = window.open(
 		'about:blank',
 		'chatgpt_oauth_popup',
@@ -646,13 +646,13 @@ async function startChatGptSignIn(): Promise<void> {
 			if (popup && !popup.closed) popup.close();
 		} catch {}
 		isSigningInChatGpt.value = false;
-		errorMessage.value = err instanceof Error ? err.message : 'Could not start ChatGPT sign-in.';
+		oauthErrorMessage.value =
+			err instanceof Error ? err.message : 'Could not start ChatGPT sign-in.';
 	}
 }
 
 async function completeChatGptSignIn(): Promise<void> {
-	errorMessage.value = '';
-	const rootStore = useRootStore();
+	oauthErrorMessage.value = '';
 	try {
 		const data = await makeRestApiRequest<{ accessToken?: string } | undefined>(
 			rootStore.restApiContext,
@@ -672,7 +672,7 @@ async function completeChatGptSignIn(): Promise<void> {
 		chatGptAuthUrl.value = '';
 		chatGptCallbackUrl.value = '';
 	} catch (err) {
-		errorMessage.value =
+		oauthErrorMessage.value =
 			err instanceof Error ? err.message : 'Failed to complete ChatGPT sign-in.';
 	}
 }
@@ -1037,6 +1037,14 @@ const stepLede = computed(() => {
 								data-test-id="assistant-model-base-url"
 							/>
 						</N8nInputLabel>
+
+						<N8nCallout
+							v-if="oauthErrorMessage"
+							theme="danger"
+							style="margin-bottom: 8px"
+						>
+							{{ oauthErrorMessage }}
+						</N8nCallout>
 
 						<div
 							v-if="
