@@ -15,13 +15,19 @@ export class ComposioController {
 		private readonly logger: Logger,
 		private readonly credentialsRepository: CredentialsRepository,
 		private readonly cipher: Cipher,
-	) {}
+	) {
+		// Pre-warm Composio key from DB on startup so triggers/workflows work immediately after restart
+		void this.resolveComposioConfig().catch(() => {});
+	}
 
 	private async resolveComposioConfig(): Promise<{ apiKey: string; baseUrl: string }> {
 		const envKey = process.env.COMPOSIO_API_KEY?.trim();
 		const envBase = process.env.COMPOSIO_BASE_URL?.trim() || 'https://backend.composio.dev';
 		if (envKey) {
-			return { apiKey: envKey, baseUrl: envBase.replace(/\/+$/, '') };
+			const baseUrl = envBase.replace(/\/+$/, '');
+			process.env.__IEAUTOM8N_COMPOSIO_API_KEY = envKey;
+			process.env.__IEAUTOM8N_COMPOSIO_BASE_URL = baseUrl;
+			return { apiKey: envKey, baseUrl };
 		}
 
 		const creds = await this.credentialsRepository.find({
@@ -34,10 +40,11 @@ export class ComposioController {
 				const decrypted = await this.cipher.decryptV2(cred.data);
 				const parsed = JSON.parse(decrypted) as { apiKey?: string; baseUrl?: string };
 				if (parsed.apiKey && parsed.apiKey.trim()) {
-					return {
-						apiKey: parsed.apiKey.trim(),
-						baseUrl: (parsed.baseUrl?.trim() || envBase).replace(/\/+$/, ''),
-					};
+					const apiKey = parsed.apiKey.trim();
+					const baseUrl = (parsed.baseUrl?.trim() || envBase).replace(/\/+$/, '');
+					process.env.__IEAUTOM8N_COMPOSIO_API_KEY = apiKey;
+					process.env.__IEAUTOM8N_COMPOSIO_BASE_URL = baseUrl;
+					return { apiKey, baseUrl };
 				}
 			} catch (err) {
 				this.logger.warn('Failed to decrypt composioApi credential', { error: err });

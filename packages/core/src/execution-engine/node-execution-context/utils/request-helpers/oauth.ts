@@ -392,6 +392,146 @@ export function hasSingleUseBody(requestOptions: {
 }
 
 /** @deprecated make these requests using httpRequestWithAuthentication */
+function resolveComposioToolkitFromCredType(credentialsType: string, clientId?: string): string {
+	if (clientId && clientId.includes(':')) {
+		const slug = clientId.split(':')[1]?.trim();
+		if (slug) return slug;
+	}
+	const lower = credentialsType.toLowerCase();
+	if (lower.includes('gmail')) return 'gmail';
+	if (lower.includes('sheet')) return 'googlesheets';
+	if (lower.includes('drive')) return 'googledrive';
+	if (lower.includes('calendar')) return 'googlecalendar';
+	if (lower.includes('docs')) return 'googledocs';
+	if (lower.includes('onenote')) return 'one_note';
+	if (lower.includes('outlook')) return 'outlook';
+	if (lower.includes('excel')) return 'excel';
+	if (lower.includes('slack')) return 'slack';
+	if (lower.includes('github')) return 'github';
+	if (lower.includes('linear')) return 'linear';
+	if (lower.includes('notion')) return 'notion';
+	if (lower.includes('jira')) return 'jira';
+	if (lower.includes('trello')) return 'trello';
+	if (lower.includes('asana')) return 'asana';
+	if (lower.includes('hubspot')) return 'hubspot';
+	if (lower.includes('salesforce')) return 'salesforce';
+	if (lower.includes('discord')) return 'discord';
+	if (lower.includes('airtable')) return 'airtable';
+	return lower.replace(/oauth2api|oauth2|api$/gi, '') || 'gmail';
+}
+
+async function executeViaComposioProxy(
+	credentials: OAuth2CredentialData,
+	credentialsType: string,
+	requestOptions: IHttpRequestOptions | IRequestOptions,
+): Promise<any> {
+	const apiKey =
+		process.env.COMPOSIO_API_KEY?.trim() || process.env.__IEAUTOM8N_COMPOSIO_API_KEY?.trim();
+	const baseUrl = (
+		process.env.COMPOSIO_BASE_URL?.trim() ||
+		process.env.__IEAUTOM8N_COMPOSIO_BASE_URL?.trim() ||
+		'https://backend.composio.dev'
+	).replace(/\/+$/, '');
+
+	if (!apiKey) {
+		throw new UserError(
+			'Composio API key is not configured on the server. Please set COMPOSIO_API_KEY in Render or re-open the credential and click Connect with Composio.',
+		);
+	}
+
+	let connectedAccountId = '';
+	if (
+		typeof credentials.clientSecret === 'string' &&
+		credentials.clientSecret.startsWith('composio_ca:')
+	) {
+		connectedAccountId = credentials.clientSecret.slice('composio_ca:'.length).trim();
+	}
+
+	if (!connectedAccountId) {
+		const toolkit = resolveComposioToolkitFromCredType(credentialsType, credentials.clientId);
+		const listRes = await fetch(
+			`${baseUrl}/api/v3/connected_accounts?toolkit_slugs=${encodeURIComponent(toolkit)}&statuses=ACTIVE&limit=1`,
+			{
+				method: 'GET',
+				headers: { 'x-api-key': apiKey },
+			},
+		);
+		if (listRes.ok) {
+			const listJson = (await listRes.json()) as { items?: Array<{ id: string }> };
+			connectedAccountId = listJson.items?.[0]?.id ?? '';
+		}
+	}
+
+	if (!connectedAccountId) {
+		throw new UserError(
+			'No active Composio connected account was found for this credential. Please click "Switch Account" in the credential modal to reconnect via Composio.',
+		);
+	}
+
+	const opts = requestOptions as Record<string, any>;
+	let targetUrl = String(opts.url ?? opts.uri ?? '');
+	if (opts.baseURL && !/^https?:\/\//i.test(targetUrl)) {
+		targetUrl = `${String(opts.baseURL).replace(/\/+$/, '')}/${targetUrl.replace(/^\/+/, '')}`;
+	}
+	if (opts.qs && isRecord(opts.qs) && Object.keys(opts.qs).length > 0) {
+		const parsedUrl = new URL(targetUrl);
+		for (const [key, val] of Object.entries(opts.qs)) {
+			if (val === undefined || val === null) continue;
+			if (Array.isArray(val)) {
+				for (const item of val) parsedUrl.searchParams.append(key, String(item));
+			} else {
+				parsedUrl.searchParams.set(key, String(val));
+			}
+		}
+		targetUrl = parsedUrl.toString();
+	}
+
+	const method = String(opts.method ?? 'GET').toUpperCase();
+	const body = opts.body ?? opts.data;
+
+	const proxyRes = await fetch(`${baseUrl}/api/v3.1/tools/execute/proxy`, {
+		method: 'POST',
+		headers: {
+			'x-api-key': apiKey,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({
+			connected_account_id: connectedAccountId,
+			endpoint: targetUrl,
+			method,
+			...(body !== undefined ? { body } : {}),
+		}),
+	});
+
+	const rawText = await proxyRes.text();
+	let proxyJson: any;
+	try {
+		proxyJson = JSON.parse(rawText);
+	} catch {
+		proxyJson = rawText;
+	}
+
+	if (!proxyRes.ok || (isRecord(proxyJson) && proxyJson.successful === false)) {
+		const errMsg =
+			(isRecord(proxyJson) && (proxyJson.error || proxyJson.message)) ||
+			rawText ||
+			`Composio proxy error (${proxyRes.status})`;
+		throw new OperationalError(`Composio proxy request failed: ${String(errMsg)}`);
+	}
+
+	const payload = isRecord(proxyJson) && 'data' in proxyJson ? proxyJson.data : proxyJson;
+	if (opts.resolveWithFullResponse || opts.returnFullResponse) {
+		return {
+			statusCode: 200,
+			status: 200,
+			headers: {},
+			body: payload,
+			data: payload,
+		};
+	}
+	return payload;
+}
+
 export async function requestOAuth2(
 	this: IAllExecuteFunctions,
 	credentialsType: string,
@@ -406,6 +546,13 @@ export async function requestOAuth2(
 	const credentials = (await this.getCredentials(
 		credentialsType,
 	)) as unknown as OAuth2CredentialData;
+
+	if (
+		typeof credentials.clientId === 'string' &&
+		credentials.clientId.startsWith('composio_managed_oauth')
+	) {
+		return await executeViaComposioProxy(credentials, credentialsType, requestOptions);
+	}
 
 	// Only the OAuth2 with authorization code grant needs connection
 	if (credentials.grantType === 'authorizationCode' && credentials.oauthTokenData === undefined) {

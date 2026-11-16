@@ -445,17 +445,20 @@ const isComposioConnected = computed(
 	() =>
 		props.credentialData?.composioConnected === true ||
 		(props.credentialData?.oauthTokenData as Record<string, unknown> | undefined)?.composio_connected === true ||
-		props.credentialData?.clientId === 'composio_managed_oauth',
+		(typeof props.credentialData?.clientId === 'string' &&
+			props.credentialData.clientId.startsWith('composio_managed_oauth')),
 );
 
 function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: string }) {
 	emit('update', {
 		name: 'clientId',
-		value: 'composio_managed_oauth',
+		value: payload?.toolkit ? `composio_managed_oauth:${payload.toolkit}` : 'composio_managed_oauth',
 	});
 	emit('update', {
 		name: 'clientSecret',
-		value: 'composio_managed_secret',
+		value: payload?.connectedAccountId
+			? `composio_ca:${payload.connectedAccountId}`
+			: 'composio_managed_secret',
 	});
 	emit('update', {
 		name: 'oauthTokenData',
@@ -748,7 +751,7 @@ function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: st
 				/>
 
 				<Banner
-					v-show="showOAuthNotConnectedBanner && !showValidationWarning"
+					v-show="showOAuthNotConnectedBanner && !showValidationWarning && !isComposioConnected"
 					:theme="isResolvable ? 'info' : 'warning'"
 					:message="
 						isResolvable
@@ -792,7 +795,7 @@ function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: st
 
 				<template v-if="canWrite">
 					<CopyInput
-						v-if="isOAuthType && !isManagedOAuth"
+						v-if="isOAuthType && !isManagedOAuth && !isComposioConnected"
 						:label="i18n.baseText('credentialEdit.credentialConfig.oAuthRedirectUrl')"
 						:value="oAuthCallbackUrl"
 						:copy-button-text="i18n.baseText('credentialEdit.credentialConfig.clickToCopy')"
