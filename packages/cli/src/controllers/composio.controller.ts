@@ -1,6 +1,6 @@
 import { Logger } from '@n8n/backend-common';
 import { AuthenticatedRequest, CredentialsRepository } from '@n8n/db';
-import { Body, Get, Post, RestController } from '@n8n/decorators';
+import { Get, Post, RestController } from '@n8n/decorators';
 import { Request, Response } from 'express';
 import { Cipher } from 'n8n-core';
 
@@ -66,12 +66,9 @@ export class ComposioController {
 	}
 
 	@Post('/connect')
-	async createConnectLink(
-		req: AuthenticatedRequest,
-		res: Response,
-		@Body body: ComposioConnectBody,
-	) {
+	async createConnectLink(req: AuthenticatedRequest, res: Response) {
 		try {
+			const body = (req.body ?? {}) as Partial<ComposioConnectBody>;
 			const toolkit = body.toolkit?.trim().toLowerCase();
 			if (!toolkit) {
 				return res.status(400).json({ message: 'Toolkit slug is required.' });
