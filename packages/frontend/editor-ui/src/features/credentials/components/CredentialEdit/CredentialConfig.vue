@@ -31,6 +31,7 @@ import Banner from '@/app/components/Banner.vue';
 import CopyInput from '@/app/components/CopyInput.vue';
 import CredentialInputs from './CredentialInputs.vue';
 import TemplatedAuthSimpleView from './TemplatedAuthSimpleView.vue';
+import ComposioConnectBanner from './ComposioConnectBanner.vue';
 import {
 	listPlaceholderTitles,
 	parseHttpUrl,
@@ -439,6 +440,37 @@ watch(showOAuthSuccessBanner, (newValue, oldValue) => {
 		emit('scrollToTop');
 	}
 });
+
+const isComposioConnected = computed(
+	() =>
+		props.credentialData?.composioConnected === true ||
+		(props.credentialData?.oauthTokenData as Record<string, unknown> | undefined)?.composio_connected === true ||
+		props.credentialData?.clientId === 'composio_managed_oauth',
+);
+
+function onComposioConnect() {
+	emit('update', {
+		name: 'clientId',
+		value: 'composio_managed_oauth',
+	});
+	emit('update', {
+		name: 'clientSecret',
+		value: 'composio_managed_secret',
+	});
+	emit('update', {
+		name: 'oauthTokenData',
+		value: {
+			access_token: 'composio_managed_token',
+			token_type: 'Bearer',
+			composio_connected: true,
+			connected_at: new Date().toISOString(),
+		},
+	});
+	emit('update', {
+		name: 'composioConnected',
+		value: true,
+	});
+}
 </script>
 
 <template>
@@ -479,6 +511,14 @@ watch(showOAuthSuccessBanner, (newValue, oldValue) => {
 			</template>
 
 			<template v-else>
+				<ComposioConnectBanner
+					v-if="isOAuthType && canWrite"
+					:service-name="serviceName"
+					:credential-type-name="credentialType.name"
+					:is-connected="isComposioConnected"
+					@connect="onComposioConnect"
+				/>
+
 				<GatewayCreditsPromotion v-if="promotionText" :text="promotionText" />
 				<N8nCallout
 					v-if="
