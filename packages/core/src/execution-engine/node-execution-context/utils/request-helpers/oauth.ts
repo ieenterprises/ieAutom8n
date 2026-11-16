@@ -440,6 +440,7 @@ async function executeViaComposioProxy(
 	}
 
 	let connectedAccountId = '';
+	let composioUserId = '';
 	if (
 		typeof credentials.clientSecret === 'string' &&
 		credentials.clientSecret.startsWith('composio_ca:')
@@ -457,8 +458,23 @@ async function executeViaComposioProxy(
 			},
 		);
 		if (listRes.ok) {
-			const listJson = (await listRes.json()) as { items?: Array<{ id: string }> };
+			const listJson = (await listRes.json()) as {
+				items?: Array<{ id: string; user_id?: string }>;
+			};
 			connectedAccountId = listJson.items?.[0]?.id ?? '';
+			composioUserId = listJson.items?.[0]?.user_id ?? '';
+		}
+	} else {
+		const acctRes = await fetch(
+			`${baseUrl}/api/v3/connected_accounts/${encodeURIComponent(connectedAccountId)}`,
+			{
+				method: 'GET',
+				headers: { 'x-api-key': apiKey },
+			},
+		);
+		if (acctRes.ok) {
+			const acctJson = (await acctRes.json()) as { user_id?: string };
+			composioUserId = acctJson.user_id ?? '';
 		}
 	}
 
@@ -497,6 +513,7 @@ async function executeViaComposioProxy(
 		},
 		body: JSON.stringify({
 			connected_account_id: connectedAccountId,
+			...(composioUserId ? { user_id: composioUserId } : {}),
 			endpoint: targetUrl,
 			method,
 			...(body !== undefined ? { body } : {}),
@@ -512,11 +529,13 @@ async function executeViaComposioProxy(
 	}
 
 	if (!proxyRes.ok || (isRecord(proxyJson) && proxyJson.successful === false)) {
-		const errMsg =
-			(isRecord(proxyJson) && (proxyJson.error || proxyJson.message)) ||
+		const rawErr =
+			(isRecord(proxyJson) && (proxyJson.error ?? proxyJson.message)) ||
 			rawText ||
 			`Composio proxy error (${proxyRes.status})`;
-		throw new OperationalError(`Composio proxy request failed: ${String(errMsg)}`);
+		const errMsg =
+			typeof rawErr === 'string' ? rawErr : JSON.stringify(rawErr);
+		throw new OperationalError(`Composio proxy request failed: ${errMsg}`);
 	}
 
 	const payload = isRecord(proxyJson) && 'data' in proxyJson ? proxyJson.data : proxyJson;
