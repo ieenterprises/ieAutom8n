@@ -448,7 +448,7 @@ const isComposioConnected = computed(
 		props.credentialData?.clientId === 'composio_managed_oauth',
 );
 
-function onComposioConnect() {
+function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: string }) {
 	emit('update', {
 		name: 'clientId',
 		value: 'composio_managed_oauth',
@@ -463,6 +463,8 @@ function onComposioConnect() {
 			access_token: 'composio_managed_token',
 			token_type: 'Bearer',
 			composio_connected: true,
+			composio_account_id: payload?.connectedAccountId || '',
+			composio_toolkit: payload?.toolkit || '',
 			connected_at: new Date().toISOString(),
 		},
 	});

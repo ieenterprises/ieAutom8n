@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { N8nButton, N8nIcon, N8nText, N8nCallout } from '@n8n/design-system';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import { N8nButton, N8nCallout, N8nText } from '@n8n/design-system';
+import { makeRestApiRequest } from '@n8n/rest-api-client';
+import { useRootStore } from '@n8n/stores/useRootStore';
 
 const props = withDefaults(
 	defineProps<{
 		serviceName: string;
 		credentialTypeName: string;
 		isConnected?: boolean;
-		nodWebUrl?: string;
 	}>(),
 	{
 		isConnected: false,
-		nodWebUrl: 'https://nod-web.onrender.com',
 	},
 );
 
 const emit = defineEmits<{
-	connect: [];
+	connect: [payload?: { connectedAccountId?: string; toolkit?: string }];
 	disconnect: [];
 }>();
 
+const rootStore = useRootStore();
 const isConnecting = ref(false);
 const showModal = ref(false);
+const errorMessage = ref('');
+const pendingAccountId = ref<string | undefined>(undefined);
 
 const appSlug = computed(() => {
 	const name = props.credentialTypeName.toLowerCase();
@@ -29,7 +32,8 @@ const appSlug = computed(() => {
 	if (name.includes('sheet')) return 'googlesheets';
 	if (name.includes('drive')) return 'googledrive';
 	if (name.includes('calendar')) return 'googlecalendar';
-	if (name.includes('onenote')) return 'onenote';
+	if (name.includes('docs')) return 'googledocs';
+	if (name.includes('onenote')) return 'one_note';
 	if (name.includes('excel')) return 'excel';
 	if (name.includes('slack')) return 'slack';
 	if (name.includes('github')) return 'github';
@@ -38,19 +42,67 @@ const appSlug = computed(() => {
 	if (name.includes('jira')) return 'jira';
 	if (name.includes('trello')) return 'trello';
 	if (name.includes('asana')) return 'asana';
+	if (name.includes('hubspot')) return 'hubspot';
+	if (name.includes('salesforce')) return 'salesforce';
+	if (name.includes('discord')) return 'discord';
+	if (name.includes('airtable')) return 'airtable';
 	if (name.includes('microsoft')) return 'microsoft';
 	if (name.includes('google')) return 'google';
-	return 'composio';
-});
-
-const connectUrl = computed(() => {
-	const base = props.nodWebUrl.replace(/\/+$/, '');
-	return `${base}`;
+	return name.replace(/oauth2api|oauth2|api$/gi, '') || 'composio';
 });
 
 let popupWindow: Window | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
-function startConnect() {
+function cleanupListeners() {
+	window.removeEventListener('message', onOAuthMessage);
+	if (pollTimer) {
+		clearInterval(pollTimer);
+		pollTimer = null;
+	}
+}
+
+function closePopup() {
+	if (popupWindow && !popupWindow.closed) {
+		try {
+			popupWindow.close();
+		} catch {}
+	}
+	popupWindow = null;
+}
+
+function onOAuthMessage(event: MessageEvent) {
+	if (event.origin !== window.location.origin) return;
+	const data = event.data as
+		| {
+				type?: string;
+				connectedAccountId?: string;
+				status?: string;
+				toolkit?: string;
+				error?: string;
+		  }
+		| undefined;
+	if (!data || data.type !== 'composio:oauth-complete') return;
+
+	cleanupListeners();
+	closePopup();
+	isConnecting.value = false;
+
+	if (data.error) {
+		errorMessage.value = data.error;
+		showModal.value = false;
+		return;
+	}
+
+	showModal.value = false;
+	emit('connect', {
+		connectedAccountId: data.connectedAccountId || pendingAccountId.value,
+		toolkit: data.toolkit || appSlug.value,
+	});
+}
+
+async function startConnect() {
+	errorMessage.value = '';
 	isConnecting.value = true;
 	showModal.value = true;
 
@@ -59,41 +111,80 @@ function startConnect() {
 	const left = window.screenX + (window.outerWidth - width) / 2;
 	const top = window.screenY + (window.outerHeight - height) / 2;
 
+	// Open synchronously on user click so browsers don't block the popup
 	popupWindow = window.open(
-		connectUrl.value,
+		'about:blank',
 		'composio_connect_popup',
 		`width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`,
 	);
 
-	if (!popupWindow) {
-		window.open(connectUrl.value, '_blank');
+	try {
+		const response = await makeRestApiRequest<{
+			redirectUrl: string;
+			connectedAccountId?: string;
+			toolkit?: string;
+		}>(rootStore.restApiContext, 'POST', '/composio/connect', {
+			toolkit: appSlug.value,
+			callbackOrigin: window.location.origin,
+		});
+
+		pendingAccountId.value = response.connectedAccountId;
+
+		if (!response.redirectUrl) {
+			throw new Error('Composio did not return a sign-in URL.');
+		}
+
+		window.addEventListener('message', onOAuthMessage);
+
+		if (popupWindow && !popupWindow.closed) {
+			popupWindow.location.href = response.redirectUrl;
+		} else {
+			popupWindow = window.open(
+				response.redirectUrl,
+				'composio_connect_popup',
+				`width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`,
+			);
+		}
+	} catch (err) {
+		cleanupListeners();
+		closePopup();
+		isConnecting.value = false;
+		showModal.value = false;
+		errorMessage.value =
+			err instanceof Error ? err.message : 'Failed to start Composio sign-in flow.';
 	}
 }
 
 function finishConnect() {
-	if (popupWindow && !popupWindow.closed) {
-		try {
-			popupWindow.close();
-		} catch {}
-	}
+	cleanupListeners();
+	closePopup();
 	isConnecting.value = false;
 	showModal.value = false;
-	emit('connect');
+	emit('connect', {
+		connectedAccountId: pendingAccountId.value,
+		toolkit: appSlug.value,
+	});
 }
 
 function cancelConnect() {
-	if (popupWindow && !popupWindow.closed) {
-		try {
-			popupWindow.close();
-		} catch {}
-	}
+	cleanupListeners();
+	closePopup();
 	isConnecting.value = false;
 	showModal.value = false;
 }
+
+onBeforeUnmount(() => {
+	cleanupListeners();
+	closePopup();
+});
 </script>
 
 <template>
 	<div :class="$style.composioContainer">
+		<N8nCallout v-if="errorMessage" theme="danger" :class="$style.errorCallout">
+			{{ errorMessage }}
+		</N8nCallout>
+
 		<!-- Connected state banner -->
 		<div v-if="isConnected" :class="$style.connectedCard">
 			<div :class="$style.cardHeader">
@@ -128,6 +219,7 @@ function cancelConnect() {
 				<N8nButton
 					size="medium"
 					type="primary"
+					:loading="isConnecting"
 					:class="$style.connectBtn"
 					@click="startConnect"
 				>
@@ -174,6 +266,10 @@ function cancelConnect() {
 <style lang="scss" module>
 .composioContainer {
 	margin-bottom: var(--spacing--s);
+}
+
+.errorCallout {
+	margin-bottom: var(--spacing--xs);
 }
 
 .promoCard {
