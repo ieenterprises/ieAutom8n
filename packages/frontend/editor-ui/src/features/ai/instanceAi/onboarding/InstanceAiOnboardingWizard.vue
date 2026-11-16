@@ -609,6 +609,81 @@ async function signInWithOpenRouter(): Promise<void> {
 	}
 }
 
+const isSigningInChatGpt = ref(false);
+const chatGptPendingState = ref('');
+const chatGptAuthUrl = ref('');
+const chatGptCallbackUrl = ref('');
+
+async function startChatGptSignIn(): Promise<void> {
+	errorMessage.value = '';
+	isSigningInChatGpt.value = true;
+	const rootStore = useRootStore();
+	const popup = window.open(
+		'about:blank',
+		'chatgpt_oauth_popup',
+		'width=540,height=720,scrollbars=yes,resizable=yes',
+	);
+	try {
+		const data = await makeRestApiRequest<{ authUrl?: string; state?: string } | undefined>(
+			rootStore.restApiContext,
+			'POST',
+			'/composio/chatgpt-start',
+			{},
+		);
+		if (!data?.authUrl || !data?.state) {
+			throw new Error('Could not start ChatGPT sign-in.');
+		}
+		chatGptAuthUrl.value = data.authUrl;
+		chatGptPendingState.value = data.state;
+		chatGptCallbackUrl.value = '';
+		if (popup && !popup.closed) {
+			popup.location.href = data.authUrl;
+		} else {
+			window.open(data.authUrl, '_blank');
+		}
+	} catch (err) {
+		try {
+			if (popup && !popup.closed) popup.close();
+		} catch {}
+		isSigningInChatGpt.value = false;
+		errorMessage.value = err instanceof Error ? err.message : 'Could not start ChatGPT sign-in.';
+	}
+}
+
+async function completeChatGptSignIn(): Promise<void> {
+	errorMessage.value = '';
+	const rootStore = useRootStore();
+	try {
+		const data = await makeRestApiRequest<{ accessToken?: string } | undefined>(
+			rootStore.restApiContext,
+			'POST',
+			'/composio/chatgpt-complete',
+			{
+				callbackUrl: chatGptCallbackUrl.value.trim(),
+				state: chatGptPendingState.value,
+			},
+		);
+		if (!data?.accessToken) {
+			throw new Error('ChatGPT sign-in did not return an access token.');
+		}
+		modelApiKey.value = data.accessToken;
+		isSigningInChatGpt.value = false;
+		chatGptPendingState.value = '';
+		chatGptAuthUrl.value = '';
+		chatGptCallbackUrl.value = '';
+	} catch (err) {
+		errorMessage.value =
+			err instanceof Error ? err.message : 'Failed to complete ChatGPT sign-in.';
+	}
+}
+
+function cancelChatGptSignIn(): void {
+	isSigningInChatGpt.value = false;
+	chatGptPendingState.value = '';
+	chatGptAuthUrl.value = '';
+	chatGptCallbackUrl.value = '';
+}
+
 function sandboxConnection(): InstanceAiConnectionUpdate | undefined {
 	if (sandboxProvider.value === 'daytona') {
 		return {
@@ -962,6 +1037,60 @@ const stepLede = computed(() => {
 								data-test-id="assistant-model-base-url"
 							/>
 						</N8nInputLabel>
+
+						<div
+							v-if="
+								modelProvider === 'openai' &&
+								!modelConnectionLocked &&
+								!readOnly &&
+								!selectedExistingCredentialId
+							"
+							style="margin-bottom: 8px"
+						>
+							<N8nButton
+								v-if="!isSigningInChatGpt"
+								variant="solid"
+								size="medium"
+								style="width: 100%"
+								@click="startChatGptSignIn"
+							>
+								Sign in with ChatGPT (Plus / Pro)
+							</N8nButton>
+							<div
+								v-else
+								style="
+									padding: 12px;
+									border: 1px solid #d4d4d8;
+									border-radius: 8px;
+									display: flex;
+									flex-direction: column;
+									gap: 8px;
+								"
+							>
+								<N8nText size="small">
+									Finish signing in to ChatGPT in the popup, then paste the Callback URL from your browser's address bar (`http://127.0.0.1:1455/auth/callback?...`) below:
+								</N8nText>
+								<N8nInput
+									v-model="chatGptCallbackUrl"
+									type="text"
+									placeholder="http://127.0.0.1:1455/auth/callback?code=..."
+									:spellcheck="false"
+								/>
+								<div style="display: flex; gap: 8px; justify-content: flex-end">
+									<N8nButton variant="outline" size="small" @click="cancelChatGptSignIn">
+										Cancel
+									</N8nButton>
+									<N8nButton
+										variant="solid"
+										size="small"
+										:disabled="!chatGptCallbackUrl.trim()"
+										@click="completeChatGptSignIn"
+									>
+										Complete sign-in
+									</N8nButton>
+								</div>
+							</div>
+						</div>
 
 						<div
 							v-if="

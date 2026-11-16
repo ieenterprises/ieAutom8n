@@ -578,6 +578,76 @@ async function signInWithOpenRouterForCredential() {
 		};
 	}
 }
+
+const isSigningInChatGpt = ref(false);
+const chatGptPendingState = ref('');
+const chatGptCallbackUrl = ref('');
+
+async function startChatGptSignInForCredential() {
+	isSigningInChatGpt.value = true;
+	const popup = window.open(
+		'about:blank',
+		'chatgpt_oauth_popup',
+		'width=540,height=720,scrollbars=yes,resizable=yes',
+	);
+	try {
+		const data = await makeRestApiRequest<{ authUrl?: string; state?: string } | undefined>(
+			rootStore.restApiContext,
+			'POST',
+			'/composio/chatgpt-start',
+			{},
+		);
+		if (!data?.authUrl || !data?.state) {
+			throw new Error('Could not start ChatGPT sign-in.');
+		}
+		chatGptPendingState.value = data.state;
+		chatGptCallbackUrl.value = '';
+		if (popup && !popup.closed) {
+			popup.location.href = data.authUrl;
+		} else {
+			window.open(data.authUrl, '_blank');
+		}
+	} catch (err) {
+		try {
+			if (popup && !popup.closed) popup.close();
+		} catch {}
+		isSigningInChatGpt.value = false;
+		openRouterToast.showError(err, 'Could not start ChatGPT sign-in');
+	}
+}
+
+async function completeChatGptSignInForCredential() {
+	try {
+		const data = await makeRestApiRequest<{ accessToken?: string } | undefined>(
+			rootStore.restApiContext,
+			'POST',
+			'/composio/chatgpt-complete',
+			{
+				callbackUrl: chatGptCallbackUrl.value.trim(),
+				state: chatGptPendingState.value,
+			},
+		);
+		if (!data?.accessToken) {
+			throw new Error('ChatGPT sign-in did not return an access token.');
+		}
+		emit('update', { name: 'apiKey', value: data.accessToken });
+		isSigningInChatGpt.value = false;
+		chatGptPendingState.value = '';
+		chatGptCallbackUrl.value = '';
+		openRouterToast.showMessage({
+			title: 'Connected to ChatGPT! Click Save to finish.',
+			type: 'success',
+		});
+	} catch (err) {
+		openRouterToast.showError(err, 'Failed to complete ChatGPT sign-in');
+	}
+}
+
+function cancelChatGptSignInForCredential() {
+	isSigningInChatGpt.value = false;
+	chatGptPendingState.value = '';
+	chatGptCallbackUrl.value = '';
+}
 </script>
 
 <template>
@@ -652,6 +722,65 @@ async function signInWithOpenRouterForCredential() {
 						>
 							Sign in with OpenRouter (1-Click)
 						</N8nButton>
+					</div>
+				</div>
+
+				<div
+					v-if="credentialType.name === 'openAiApi' && canWrite"
+					style="
+						background: linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(16, 163, 127, 0.03) 100%);
+						border: 1px solid rgba(16, 163, 127, 0.3);
+						border-radius: 8px;
+						padding: 16px;
+						margin-bottom: 12px;
+						display: flex;
+						flex-direction: column;
+						gap: 8px;
+					"
+				>
+					<N8nText :bold="true" size="large">Connect OpenAI with ChatGPT</N8nText>
+					<N8nText size="small" color="text-light">
+						Sign in with your ChatGPT Plus or Pro account without manually creating an API key.
+					</N8nText>
+					<div v-if="!isSigningInChatGpt">
+						<N8nButton
+							type="primary"
+							size="medium"
+							@click="startChatGptSignInForCredential"
+						>
+							Sign in with ChatGPT (Plus / Pro)
+						</N8nButton>
+					</div>
+					<div v-else style="display: flex; flex-direction: column; gap: 8px">
+						<N8nText size="small">
+							Finish signing in to ChatGPT in the popup, then paste the Callback URL from your browser's address bar (`http://127.0.0.1:1455/auth/callback?...`) below:
+						</N8nText>
+						<input
+							v-model="chatGptCallbackUrl"
+							type="text"
+							placeholder="http://127.0.0.1:1455/auth/callback?code=..."
+							style="
+								padding: 8px 10px;
+								border: 1px solid #d4d4d8;
+								border-radius: 6px;
+								font-size: 13px;
+								width: 100%;
+								box-sizing: border-box;
+							"
+						/>
+						<div style="display: flex; gap: 8px; justify-content: flex-end">
+							<N8nButton variant="outline" size="small" @click="cancelChatGptSignInForCredential">
+								Cancel
+							</N8nButton>
+							<N8nButton
+								type="primary"
+								size="small"
+								:disabled="!chatGptCallbackUrl.trim()"
+								@click="completeChatGptSignInForCredential"
+							>
+								Complete sign-in
+							</N8nButton>
+						</div>
 					</div>
 				</div>
 

@@ -1,3 +1,4 @@
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { Logger } from '@n8n/backend-common';
 import { AuthenticatedRequest, CredentialsRepository } from '@n8n/db';
 import { Get, Post, RestController } from '@n8n/decorators';
@@ -459,6 +460,141 @@ export class ComposioController {
 			return res.json({ data: { key: data.key } });
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'OpenRouter key exchange failed';
+			return res.status(400).json({ message });
+		}
+	}
+
+	private pendingChatGptFlows = new Map<
+		string,
+		{ codeVerifier: string; nonce: string; createdAt: number }
+	>();
+
+	@Post('/chatgpt-start')
+	startChatGptAuth(req: AuthenticatedRequest, res: Response) {
+		// Clean up expired flows older than 15 minutes
+		const now = Date.now();
+		for (const [k, v] of this.pendingChatGptFlows) {
+			if (now - v.createdAt > 15 * 60_000) this.pendingChatGptFlows.delete(k);
+		}
+
+		const codeVerifier = randomBytes(32).toString('base64url');
+		const codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+		const state = randomBytes(24).toString('base64url');
+		const nonce = randomBytes(24).toString('base64url');
+		const hostId = req.user?.id || randomUUID();
+
+		this.pendingChatGptFlows.set(state, { codeVerifier, nonce, createdAt: now });
+
+		const authUrl = new URL('https://auth.openai.com/api/accounts/authorize');
+		authUrl.searchParams.set('response_type', 'code');
+		authUrl.searchParams.set('client_id', 'dynamic_agent_client');
+		authUrl.searchParams.set('redirect_uri', 'http://127.0.0.1:1455/auth/callback');
+		authUrl.searchParams.set(
+			'scope',
+			'openid profile email offline_access resource.invoke chatgpt.tokens.use.direct',
+		);
+		authUrl.searchParams.set('resource', 'https://api.openai.com/v1');
+		authUrl.searchParams.set('code_challenge', codeChallenge);
+		authUrl.searchParams.set('code_challenge_method', 'S256');
+		authUrl.searchParams.set('state', state);
+		authUrl.searchParams.set('nonce', nonce);
+		authUrl.searchParams.set('agent_name_hint', 'ieAutom8n');
+		authUrl.searchParams.set('ext_agent_host_id', hostId);
+
+		return res.json({
+			data: {
+				authUrl: authUrl.toString(),
+				state,
+			},
+		});
+	}
+
+	@Post('/chatgpt-complete')
+	async completeChatGptAuth(req: AuthenticatedRequest, res: Response) {
+		try {
+			const body = (req.body ?? {}) as { callbackUrl?: string; state?: string };
+			const rawCallback = body.callbackUrl?.trim();
+			if (!rawCallback) {
+				return res.status(400).json({ message: 'Callback URL is required.' });
+			}
+
+			let parsedUrl: URL;
+			try {
+				parsedUrl = new URL(rawCallback);
+			} catch {
+				return res.status(400).json({ message: 'Invalid Callback URL format.' });
+			}
+
+			const errorParam = parsedUrl.searchParams.get('error');
+			if (errorParam) {
+				const desc = parsedUrl.searchParams.get('error_description') || errorParam;
+				return res.status(400).json({ message: `ChatGPT sign-in error: ${desc}` });
+			}
+
+			const code = parsedUrl.searchParams.get('code')?.trim();
+			const state = parsedUrl.searchParams.get('state')?.trim() || body.state?.trim() || '';
+			const issuedClientId =
+				parsedUrl.searchParams.get('client_id')?.trim() || 'dynamic_agent_client';
+
+			if (!code || !state) {
+				return res.status(400).json({
+					message: 'The Callback URL is missing the required code or state parameter.',
+				});
+			}
+
+			const pending = this.pendingChatGptFlows.get(state);
+			if (!pending) {
+				return res.status(400).json({
+					message: 'Sign-in session expired or state did not match. Please start sign-in again.',
+				});
+			}
+			this.pendingChatGptFlows.delete(state);
+
+			const tokenParams = new URLSearchParams({
+				grant_type: 'authorization_code',
+				code,
+				redirect_uri: 'http://127.0.0.1:1455/auth/callback',
+				client_id: issuedClientId,
+				code_verifier: pending.codeVerifier,
+			});
+
+			const tokenRes = await fetch('https://auth.openai.com/oauth/token', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				body: tokenParams.toString(),
+			});
+
+			const tokenText = await tokenRes.text();
+			if (!tokenRes.ok) {
+				this.logger.error('ChatGPT OAuth token exchange failed', {
+					status: tokenRes.status,
+					tokenText,
+				});
+				return res.status(tokenRes.status).json({
+					message: `ChatGPT token exchange failed: ${tokenText}`,
+				});
+			}
+
+			const tokenJson = JSON.parse(tokenText) as {
+				access_token?: string;
+				refresh_token?: string;
+				expires_in?: number;
+			};
+
+			if (!tokenJson.access_token) {
+				return res.status(502).json({ message: 'OpenAI did not return an access_token.' });
+			}
+
+			return res.json({
+				data: {
+					accessToken: tokenJson.access_token,
+					refreshToken: tokenJson.refresh_token,
+					expiresIn: tokenJson.expires_in,
+					clientId: issuedClientId,
+				},
+			});
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Failed to complete ChatGPT sign-in';
 			return res.status(400).json({ message });
 		}
 	}
