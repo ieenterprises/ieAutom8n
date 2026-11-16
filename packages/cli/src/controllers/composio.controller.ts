@@ -402,6 +402,13 @@ export class ComposioController {
 	<script>
 		(function () {
 			try {
+				if (typeof BroadcastChannel !== 'undefined') {
+					var bc = new BroadcastChannel('ieautom8n_openrouter_oauth');
+					bc.postMessage(${payload});
+					bc.close();
+				}
+			} catch (e) {}
+			try {
 				if (window.opener) {
 					window.opener.postMessage(${payload}, window.location.origin);
 				}
@@ -411,5 +418,48 @@ export class ComposioController {
 	</script>
 </body>
 </html>`);
+	}
+
+	@Post('/openrouter-exchange')
+	async exchangeOpenRouterCode(req: AuthenticatedRequest, res: Response) {
+		try {
+			const body = (req.body ?? {}) as { code?: string; codeVerifier?: string };
+			const code = body.code?.trim();
+			const codeVerifier = body.codeVerifier?.trim();
+			if (!code || !codeVerifier) {
+				return res.status(400).json({ message: 'Missing OpenRouter code or codeVerifier.' });
+			}
+
+			const exchangeRes = await fetch('https://openrouter.ai/api/v1/auth/keys', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					code,
+					code_verifier: codeVerifier,
+					code_challenge_method: 'S256',
+				}),
+			});
+
+			if (!exchangeRes.ok) {
+				const errText = await exchangeRes.text();
+				this.logger.error('OpenRouter key exchange failed', {
+					status: exchangeRes.status,
+					errText,
+				});
+				return res.status(exchangeRes.status).json({
+					message: `OpenRouter key exchange failed: ${errText}`,
+				});
+			}
+
+			const data = (await exchangeRes.json()) as { key?: string };
+			if (!data.key) {
+				return res.status(502).json({ message: 'OpenRouter did not return an API key.' });
+			}
+
+			return res.json({ data: { key: data.key } });
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'OpenRouter key exchange failed';
+			return res.status(400).json({ message });
+		}
 	}
 }

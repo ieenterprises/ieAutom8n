@@ -26,6 +26,8 @@ import {
 	N8nText,
 } from '@n8n/design-system';
 import { type BaseTextKey, useI18n } from '@n8n/i18n';
+import { makeRestApiRequest } from '@n8n/rest-api-client';
+import { useRootStore } from '@n8n/stores/useRootStore';
 import { TIME } from '@/app/constants/durations';
 import { useCredentialsStore } from '@/features/credentials/credentials.store';
 import { SANDBOX_PROVIDER_LABELS } from '../constants';
@@ -549,12 +551,18 @@ async function signInWithOpenRouter(): Promise<void> {
 		return;
 	}
 
-	const onMessage = async (event: MessageEvent) => {
-		if (event.origin !== window.location.origin) return;
-		const msg = event.data as { type?: string; code?: string; error?: string } | undefined;
-		if (!msg || msg.type !== 'openrouter:oauth-complete') return;
+	const rootStore = useRootStore();
+	let handled = false;
+	let bc: BroadcastChannel | null = null;
+
+	const finish = async (msg: { type?: string; code?: string; error?: string } | undefined) => {
+		if (handled || !msg || msg.type !== 'openrouter:oauth-complete') return;
+		handled = true;
 
 		window.removeEventListener('message', onMessage);
+		try {
+			bc?.close();
+		} catch {}
 		try {
 			if (!popup.closed) popup.close();
 		} catch {}
@@ -566,20 +574,16 @@ async function signInWithOpenRouter(): Promise<void> {
 		}
 
 		try {
-			const res = await fetch('https://openrouter.ai/api/v1/auth/keys', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
+			const data = await makeRestApiRequest<{ key?: string } | undefined>(
+				rootStore.restApiContext,
+				'POST',
+				'/composio/openrouter-exchange',
+				{
 					code: msg.code,
-					code_verifier: codeVerifier,
-					code_challenge_method: 'S256',
-				}),
-			});
-			if (!res.ok) {
-				throw new Error(`OpenRouter key exchange failed (${res.status})`);
-			}
-			const data = (await res.json()) as { key?: string };
-			if (!data.key) {
+					codeVerifier,
+				},
+			);
+			if (!data?.key) {
 				throw new Error('OpenRouter did not return an API key.');
 			}
 			modelApiKey.value = data.key;
@@ -591,7 +595,18 @@ async function signInWithOpenRouter(): Promise<void> {
 		}
 	};
 
+	const onMessage = (event: MessageEvent) => {
+		if (event.origin !== window.location.origin) return;
+		void finish(event.data as { type?: string; code?: string; error?: string } | undefined);
+	};
+
 	window.addEventListener('message', onMessage);
+	if (typeof BroadcastChannel !== 'undefined') {
+		bc = new BroadcastChannel('ieautom8n_openrouter_oauth');
+		bc.onmessage = (event) => {
+			void finish(event.data as { type?: string; code?: string; error?: string } | undefined);
+		};
+	}
 }
 
 function sandboxConnection(): InstanceAiConnectionUpdate | undefined {

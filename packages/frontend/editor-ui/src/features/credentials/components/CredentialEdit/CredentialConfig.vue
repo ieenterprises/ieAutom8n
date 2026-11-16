@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, watch } from 'vue';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { makeRestApiRequest } from '@n8n/rest-api-client';
+import { useToast } from '@n8n/composables/useToast';
 
 import { getAppNameFromCredType } from '@/app/utils/nodeTypesUtils';
 import type {
@@ -476,6 +478,106 @@ function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: st
 		value: true,
 	});
 }
+const isSigningInOpenRouter = ref(false);
+const openRouterToast = useToast();
+
+async function signInWithOpenRouterForCredential() {
+	isSigningInOpenRouter.value = true;
+	const randomBytes = new Uint8Array(32);
+	crypto.getRandomValues(randomBytes);
+	const toBase64Url = (buf: Uint8Array) =>
+		btoa(String.fromCharCode(...buf))
+			.replaceAll('+', '-')
+			.replaceAll('/', '_')
+			.replaceAll('=', '');
+	const codeVerifier = toBase64Url(randomBytes);
+	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+	const codeChallenge = toBase64Url(new Uint8Array(digest));
+
+	const callbackUrl = `${window.location.origin}/rest/composio/openrouter-callback`;
+	const authUrl = `https://openrouter.ai/auth?callback_url=${encodeURIComponent(callbackUrl)}&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256`;
+
+	const width = 520;
+	const height = 680;
+	const left = window.screenX + (window.outerWidth - width) / 2;
+	const top = window.screenY + (window.outerHeight - height) / 2;
+	const popup = window.open(
+		authUrl,
+		'openrouter_oauth_popup',
+		`width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`,
+	);
+
+	if (!popup) {
+		isSigningInOpenRouter.value = false;
+		openRouterToast.showMessage({
+			title: 'Please allow popups for ieAutom8n to sign in with OpenRouter.',
+			type: 'error',
+		});
+		return;
+	}
+
+	let handled = false;
+	let bc: BroadcastChannel | null = null;
+
+	const finish = async (msg: { type?: string; code?: string; error?: string } | undefined) => {
+		if (handled || !msg || msg.type !== 'openrouter:oauth-complete') return;
+		handled = true;
+
+		window.removeEventListener('message', onMessage);
+		try {
+			bc?.close();
+		} catch {}
+		try {
+			if (!popup.closed) popup.close();
+		} catch {}
+
+		if (msg.error || !msg.code) {
+			isSigningInOpenRouter.value = false;
+			openRouterToast.showMessage({
+				title: msg.error || 'OpenRouter sign-in was cancelled.',
+				type: 'error',
+			});
+			return;
+		}
+
+		try {
+			const data = await makeRestApiRequest<{ key?: string } | undefined>(
+				rootStore.restApiContext,
+				'POST',
+				'/composio/openrouter-exchange',
+				{
+					code: msg.code,
+					codeVerifier,
+				},
+			);
+			if (!data?.key) {
+				throw new Error('OpenRouter did not return an API key.');
+			}
+			emit('update', { name: 'apiKey', value: data.key });
+			openRouterToast.showMessage({
+				title: 'Connected to OpenRouter! Click Save to finish.',
+				type: 'success',
+			});
+		} catch (err) {
+			openRouterToast.showError(err, 'Failed to connect OpenRouter');
+		} finally {
+			isSigningInOpenRouter.value = false;
+		}
+	};
+
+	const onMessage = (event: MessageEvent) => {
+		if (event.origin !== window.location.origin) return;
+		void finish(event.data as { type?: string; code?: string; error?: string } | undefined);
+	};
+
+	window.addEventListener('message', onMessage);
+	if (typeof BroadcastChannel !== 'undefined') {
+		bc = new BroadcastChannel('ieautom8n_openrouter_oauth');
+		bc.onmessage = (event) => {
+			void finish(event.data as { type?: string; code?: string; error?: string } | undefined);
+		};
+	}
+}
 </script>
 
 <template>
@@ -523,6 +625,35 @@ function onComposioConnect(payload?: { connectedAccountId?: string; toolkit?: st
 					:is-connected="isComposioConnected"
 					@connect="onComposioConnect"
 				/>
+
+				<div
+					v-if="credentialType.name === 'openRouterApi' && canWrite"
+					style="
+						background: linear-gradient(135deg, rgba(147, 51, 234, 0.08) 0%, rgba(79, 70, 229, 0.04) 100%);
+						border: 1px solid rgba(147, 51, 234, 0.25);
+						border-radius: 8px;
+						padding: 16px;
+						margin-bottom: 12px;
+						display: flex;
+						flex-direction: column;
+						gap: 8px;
+					"
+				>
+					<N8nText :bold="true" size="large">Connect OpenRouter seamlessly</N8nText>
+					<N8nText size="small" color="text-light">
+						Sign in with your OpenRouter account in 1 click to automatically generate and fill your API key.
+					</N8nText>
+					<div>
+						<N8nButton
+							type="primary"
+							size="medium"
+							:loading="isSigningInOpenRouter"
+							@click="signInWithOpenRouterForCredential"
+						>
+							Sign in with OpenRouter (1-Click)
+						</N8nButton>
+					</div>
+				</div>
 
 				<GatewayCreditsPromotion v-if="promotionText" :text="promotionText" />
 				<N8nCallout
