@@ -167,9 +167,11 @@ export class ComposioController {
 			}
 
 			return res.json({
-				redirectUrl: linkData.redirect_url,
-				connectedAccountId: linkData.connected_account_id,
-				toolkit,
+				data: {
+					redirectUrl: linkData.redirect_url,
+					connectedAccountId: linkData.connected_account_id,
+					toolkit,
+				},
 			});
 		} catch (error) {
 			const message = error instanceof Error ? error.message : 'Failed to start Composio connect';

@@ -119,18 +119,21 @@ async function startConnect() {
 	);
 
 	try {
-		const response = await makeRestApiRequest<{
-			redirectUrl: string;
-			connectedAccountId?: string;
-			toolkit?: string;
-		}>(rootStore.restApiContext, 'POST', '/composio/connect', {
+		const response = await makeRestApiRequest<
+			| {
+					redirectUrl?: string;
+					connectedAccountId?: string;
+					toolkit?: string;
+			  }
+			| undefined
+		>(rootStore.restApiContext, 'POST', '/composio/connect', {
 			toolkit: appSlug.value,
 			callbackOrigin: window.location.origin,
 		});
 
-		pendingAccountId.value = response.connectedAccountId;
+		pendingAccountId.value = response?.connectedAccountId;
 
-		if (!response.redirectUrl) {
+		if (!response?.redirectUrl) {
 			throw new Error('Composio did not return a sign-in URL.');
 		}
 
