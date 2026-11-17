@@ -667,9 +667,6 @@ async function completeChatGptSignIn(): Promise<void> {
 			throw new Error('ChatGPT sign-in did not return an access token.');
 		}
 		modelApiKey.value = data.accessToken;
-		if (!modelName.value || modelName.value === 'gpt-6.1-sol' || modelName.value === 'gpt-6-astra') {
-			modelName.value = 'gpt-4o';
-		}
 		isSigningInChatGpt.value = false;
 		chatGptPendingState.value = '';
 		chatGptAuthUrl.value = '';
@@ -685,6 +682,20 @@ function cancelChatGptSignIn(): void {
 	chatGptPendingState.value = '';
 	chatGptAuthUrl.value = '';
 	chatGptCallbackUrl.value = '';
+}
+
+async function pasteAndCompleteChatGptSignIn(): Promise<void> {
+	try {
+		const text = await navigator.clipboard.readText();
+		if (text.trim()) {
+			chatGptCallbackUrl.value = text.trim();
+			await completeChatGptSignIn();
+		} else {
+			oauthErrorMessage.value = 'Clipboard is empty. Copy the http://127.0.0.1:1455/auth/callback?... URL first.';
+		}
+	} catch {
+		oauthErrorMessage.value = 'Could not read clipboard automatically — please paste the URL into the box below.';
+	}
 }
 
 function sandboxConnection(): InstanceAiConnectionUpdate | undefined {
@@ -1090,6 +1101,13 @@ const stepLede = computed(() => {
 								<div style="display: flex; gap: 8px; justify-content: flex-end">
 									<N8nButton variant="outline" size="small" @click="cancelChatGptSignIn">
 										Cancel
+									</N8nButton>
+									<N8nButton
+										variant="outline"
+										size="small"
+										@click="pasteAndCompleteChatGptSignIn"
+									>
+										Paste &amp; Complete
 									</N8nButton>
 									<N8nButton
 										variant="solid"
