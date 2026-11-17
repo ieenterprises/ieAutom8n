@@ -17,6 +17,8 @@ services:
         value: "5678"
       - key: N8N_PROXY_HOPS
         value: "1"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=1536"
       - key: N8N_ENCRYPTION_KEY
         generateValue: true
       - key: N8N_DEFAULT_BINARY_DATA_MODE
