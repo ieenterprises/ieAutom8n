@@ -3,7 +3,7 @@ services:
     name: ieautom8n
     env: image
     image:
-      url: ghcr.io/ieenterprises/ieautom8n:latest
+      url: ghcr.io/ieenterprises/ieautom8n:main
     plan: starter
     region: oregon
     disk:
