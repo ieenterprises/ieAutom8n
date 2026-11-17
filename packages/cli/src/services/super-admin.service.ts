@@ -1,6 +1,7 @@
 import {
 	GLOBAL_ADMIN_ROLE,
 	GLOBAL_OWNER_ROLE,
+	isPerson,
 	Person,
 	PersonRepository,
 	SettingsRepository,
@@ -222,8 +223,9 @@ export class SuperAdminService {
 		unassignedUsers: SuperAdminUserView[];
 	}> {
 		const registry = await this.loadRegistry();
-		const users = await this.personRepository.find({ relations: ['role'] });
-		const userMap = new Map(users.map((u) => [u.id, u]));
+		const { users: allUsers } = await this.personRepository.listUsers({ take: 1000, skip: 0 });
+		const users = allUsers.filter(isPerson);
+		const userMap = new Map<string, Person>(users.map((u) => [u.id, u]));
 		const suspendedSet = new Set(registry.suspendedUserIds);
 
 		// Auto-register any existing global:owner / global:admin users not yet in registry
@@ -341,6 +343,6 @@ export class SuperAdminService {
 		registry.suspendedUserIds = registry.suspendedUserIds.filter((id) => id !== userId);
 		await this.saveRegistry(registry);
 
-		await this.personRepository.delete({ id: userId });
+		await this.userRepository.delete({ id: userId });
 	}
 }

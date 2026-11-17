@@ -248,9 +248,7 @@ export class OwnershipService {
 
 		if (!options?.overwriteExisting && (await this.hasInstanceOwner())) {
 			const normalizedEmail = email.toLowerCase();
-			const existing = await this.personRepository.findOne({
-				where: { email: normalizedEmail },
-			});
+			const existing = await this.personRepository.findByEmail(normalizedEmail);
 			if (existing) {
 				throw new BadRequestError('An account with this email already exists.');
 			}
