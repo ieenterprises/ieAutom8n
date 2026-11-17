@@ -18,7 +18,7 @@ const getStartedRoute = computed(() => {
 	if (settingsStore.showSetupPage) {
 		return { name: VIEWS.SETUP };
 	}
-	return { name: VIEWS.SIGNUP };
+	return { name: VIEWS.SIGNIN };
 });
 
 const activeTemplate = ref<ICuratedTemplate | null>(null);

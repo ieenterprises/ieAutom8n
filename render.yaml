@@ -17,6 +17,10 @@ services:
         value: "5678"
       - key: N8N_PROXY_HOPS
         value: "1"
+      - key: N8N_EDITOR_BASE_URL
+        value: "https://ieautom8n.onrender.com"
+      - key: WEBHOOK_URL
+        value: "https://ieautom8n.onrender.com/"
       - key: NODE_OPTIONS
         value: "--max-old-space-size=1536"
       - key: N8N_ENCRYPTION_KEY

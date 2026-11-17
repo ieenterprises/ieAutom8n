@@ -177,7 +177,19 @@ export class UsersController {
 			},
 		);
 
-		const baseUrl = this.urlService.getInstanceBaseUrl();
+		let baseUrl = this.urlService.getInstanceBaseUrl();
+		const host = req.get('host');
+		if (
+			host &&
+			!host.startsWith('localhost') &&
+			!host.startsWith('127.0.0.1') &&
+			/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(baseUrl)
+		) {
+			const forwardedProto = req.headers['x-forwarded-proto'];
+			const proto =
+				typeof forwardedProto === 'string' ? forwardedProto.split(',')[0].trim() : req.protocol;
+			baseUrl = `${proto}://${host}`;
+		}
 		const inviteLink = `${baseUrl}/signup?token=${token}`;
 
 		return { link: inviteLink };
