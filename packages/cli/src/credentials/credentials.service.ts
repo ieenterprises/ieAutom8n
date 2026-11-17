@@ -1194,11 +1194,13 @@ export class CredentialsService {
 					data: updatedData,
 				});
 
-				await this.credentialsRepository.update(credential.id, {
-					data: encrypted.data,
-					updatedAt: encrypted.updatedAt,
-				});
-				credential.data = encrypted.data;
+				if (encrypted.data) {
+					await this.credentialsRepository.update(credential.id, {
+						data: encrypted.data,
+						updatedAt: encrypted.updatedAt,
+					});
+					credential.data = encrypted.data;
+				}
 
 				return updatedData;
 			} catch (error) {
