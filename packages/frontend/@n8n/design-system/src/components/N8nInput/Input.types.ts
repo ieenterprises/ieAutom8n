@@ -20,6 +20,7 @@ export interface InputProps {
 	readonly?: boolean;
 	required?: boolean;
 	clearable?: boolean;
+	showPassword?: boolean;
 	rows?: number;
 	// Masks a textarea's content (dots) for secrets that span multiple lines,
 	// where <input type="password"> can't be used because it strips newlines.

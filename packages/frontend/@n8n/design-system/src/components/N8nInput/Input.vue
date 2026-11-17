@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<InputProps>(), {
 	readonly: false,
 	required: false,
 	clearable: false,
+	showPassword: false,
 	rows: 2,
 	masked: false,
 	maxlength: undefined,
@@ -148,6 +149,21 @@ const showClearButton = computed(() => {
 	return props.clearable && !props.disabled && props.modelValue !== '' && props.modelValue !== null;
 });
 
+// Password visibility toggle
+const isPasswordVisible = ref(false);
+const showPasswordToggle = computed(() => {
+	return props.type === 'password' && props.showPassword && !props.disabled;
+});
+const effectiveType = computed(() => {
+	if (props.type === 'password' && props.showPassword && isPasswordVisible.value) {
+		return 'text';
+	}
+	return props.type;
+});
+const togglePasswordVisibility = () => {
+	isPasswordVisible.value = !isPasswordVisible.value;
+};
+
 const autosizeRows = computed(() =>
 	typeof props.autosize === 'object'
 		? { minRows: props.autosize.minRows, maxRows: props.autosize.maxRows }
@@ -205,7 +221,7 @@ defineExpose({ focus, blur, select });
 			<input
 				v-if="type !== 'textarea'"
 				ref="inputRef"
-				:type="type"
+				:type="effectiveType"
 				:value="modelValue ?? ''"
 				:class="$style.input"
 				:placeholder="placeholder"
@@ -250,6 +266,19 @@ defineExpose({ focus, blur, select });
 			<span v-if="$slots.suffix" :class="$style.suffix">
 				<slot name="suffix" />
 			</span>
+
+			<!-- Password visibility toggle -->
+			<button
+				v-if="showPasswordToggle"
+				type="button"
+				:class="$style.passwordToggleButton"
+				:aria-label="isPasswordVisible ? 'Hide password' : 'Show password'"
+				:aria-pressed="isPasswordVisible"
+				tabindex="-1"
+				@click.stop="togglePasswordVisibility"
+			>
+				<Icon :icon="isPasswordVisible ? 'eye-off' : 'eye'" size="small" />
+			</button>
 
 			<!-- Clear button -->
 			<button
@@ -454,7 +483,8 @@ defineExpose({ focus, blur, select });
 	}
 }
 
-.clearButton {
+.clearButton,
+.passwordToggleButton {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -468,11 +498,13 @@ defineExpose({ focus, blur, select });
 	transition: color 0.2s;
 }
 
-.clearButton:hover {
+.clearButton:hover,
+.passwordToggleButton:hover {
 	color: var(--color--text--shade-1);
 }
 
-.clearButton:focus {
+.clearButton:focus,
+.passwordToggleButton:focus {
 	outline: none;
 }
 

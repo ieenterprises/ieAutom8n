@@ -150,6 +150,7 @@ const formConfig: IFormBoxConfig = reactive({
 			properties: {
 				label: locale.baseText('auth.password'),
 				type: 'password',
+				showPassword: true,
 				required: true,
 				showRequiredAsterisk: false,
 				validateOnBlur: false,

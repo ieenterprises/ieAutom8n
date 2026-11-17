@@ -44,6 +44,7 @@ export interface Props {
 	focusInitially?: boolean;
 	labelSize?: 'small' | 'medium' | 'large';
 	disabled?: boolean;
+	showPassword?: boolean;
 	activeLabel?: string;
 	inactiveLabel?: string;
 	teleported?: boolean;
@@ -250,6 +251,7 @@ defineExpose({ inputRef });
 				:maxlength="maxlength"
 				:autocomplete="autocomplete"
 				:disabled="disabled"
+				:show-password="showPassword"
 				:size="tagSize"
 				:autosize
 				@update:model-value="onUpdateModelValue"

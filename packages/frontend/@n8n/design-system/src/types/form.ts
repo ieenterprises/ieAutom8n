@@ -71,6 +71,7 @@ export type IFormInput<Metadata = Record<string, unknown>> = {
 		capitalize?: boolean;
 		focusInitially?: boolean;
 		disabled?: boolean;
+		showPassword?: boolean;
 		labelSize?: 'small' | 'medium' | 'large';
 		tagSize?: 'small' | 'medium' | 'large';
 		labelAlignment?: 'left' | 'right' | 'center';

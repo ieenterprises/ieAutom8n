@@ -50,6 +50,7 @@ const FORM_CONFIG: IFormBoxConfig = {
 			properties: {
 				label: i18n.baseText('auth.password'),
 				type: 'password',
+				showPassword: true,
 				validationRules: [createPasswordRules(passwordMinLength)],
 				required: true,
 				infoText: i18n.baseText('auth.defaultPasswordRequirements', {
