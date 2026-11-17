@@ -66,7 +66,7 @@ export async function resolveMigrationReportFinding(
 		workflow,
 	);
 	if (!finding) {
-		throw new UserError('n8n Assistant cannot open this migration report finding');
+		throw new UserError('ieAutom8n Assistant cannot open this migration report finding');
 	}
 
 	return { workflow: { id: workflow.id, name: workflow.name }, ...finding };
