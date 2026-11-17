@@ -3,7 +3,7 @@ import { GlobalConfig } from '@n8n/config';
 import { Time } from '@n8n/constants';
 import type { AuthenticatedRequest, Person } from '@n8n/db';
 import { GLOBAL_OWNER_ROLE, InvalidAuthTokenRepository, PersonRepository } from '@n8n/db';
-import { Service } from '@n8n/di';
+import { Container, Service } from '@n8n/di';
 import { isRecord } from '@n8n/utils/is-record';
 import { createHash } from 'crypto';
 import type { NextFunction, Request, Response } from 'express';
@@ -15,6 +15,7 @@ import { AUTH_COOKIE_NAME, RESPONSE_ERROR_MESSAGES } from '@/constants';
 import { AuthError, ForbiddenError } from '@n8n/errors';
 import { License } from '@/license';
 import { MfaService } from '@/mfa/mfa.service';
+import { SuperAdminService } from '@/services/super-admin.service';
 import {
 	JwtService,
 	UrlService,
@@ -368,6 +369,18 @@ export class AuthService {
 
 		const { person, jwtPayload } = await this.validateToken(token);
 
+		let suspensionCheck: { suspended: boolean; reason?: string } | undefined;
+		try {
+			suspensionCheck = await Container.get(SuperAdminService).isUserSuspended(person.id);
+		} catch {
+			// Ignore if SuperAdminService is not registered in isolated unit tests
+		}
+		if (suspensionCheck?.suspended) {
+			throw new ForbiddenError(
+				suspensionCheck.reason || 'Your account has been suspended by the Super Admin.',
+			);
+		}
+
 		this.validateBrowserId(jwtPayload, browserId, endpoint, method);
 
 		await this.checkMfaGate(person, jwtPayload);
@@ -468,6 +481,18 @@ export class AuthService {
 		res: Response,
 	): Promise<[Person, { usedMfa: boolean }]> {
 		const { person, jwtPayload } = await this.validateToken(token);
+
+		let suspensionCheck: { suspended: boolean; reason?: string } | undefined;
+		try {
+			suspensionCheck = await Container.get(SuperAdminService).isUserSuspended(person.id);
+		} catch {
+			// Ignore if SuperAdminService is not registered in isolated unit tests
+		}
+		if (suspensionCheck?.suspended) {
+			throw new ForbiddenError(
+				suspensionCheck.reason || 'Your account has been suspended by the Super Admin.',
+			);
+		}
 
 		const browserId = this.getBrowserId(req);
 		const endpoint = this.getEndpoint(req);

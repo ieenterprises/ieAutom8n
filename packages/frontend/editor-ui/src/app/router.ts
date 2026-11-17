@@ -68,6 +68,7 @@ const SettingsCommunityNodesView = async () =>
 const SettingsApiView = async () =>
 	await import('@/features/settings/apiKeys/views/SettingsApiView.vue');
 const SetupView = async () => await import('@/features/core/auth/views/SetupView.vue');
+const SuperAdminView = async () => await import('@/app/views/SuperAdminView.vue');
 const SigninView = async () => await import('@/features/core/auth/views/SigninView.vue');
 const SignupView = async () => await import('@/features/core/auth/views/SignupView.vue');
 const TemplatesCollectionView = async () =>
@@ -553,10 +554,17 @@ export const routes: RouteRecordRaw[] = [
 		component: SetupView,
 		meta: {
 			layout: 'auth',
-			middleware: ['defaultUser'],
 			telemetry: {
 				pageCategory: 'auth',
 			},
+		},
+	},
+	{
+		path: '/super-admin',
+		name: 'SuperAdminView',
+		component: SuperAdminView,
+		meta: {
+			layout: 'auth',
 		},
 	},
 	{

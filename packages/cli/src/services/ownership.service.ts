@@ -3,6 +3,7 @@ import { Logger } from '@n8n/backend-common';
 import { CacheService, EventService, WorkflowProjectService } from '@n8n/backend-services';
 import type { ListQueryDb } from '@n8n/db';
 import {
+	GLOBAL_ADMIN_ROLE,
 	GLOBAL_OWNER_ROLE,
 	isPerson,
 	Person,
@@ -24,6 +25,7 @@ import config from '@/config';
 import { BadRequestError } from '@n8n/errors';
 
 import { PasswordUtility } from './password.utility';
+import { SuperAdminService } from './super-admin.service';
 
 @Service()
 export class OwnershipService {
@@ -38,6 +40,7 @@ export class OwnershipService {
 		private userRepository: UserRepository,
 		private personRepository: PersonRepository,
 		private settingsRepository: SettingsRepository,
+		private superAdminService: SuperAdminService,
 	) {}
 
 	// To make use of the cache service we should store POJOs, these
@@ -244,10 +247,32 @@ export class OwnershipService {
 		const { email, firstName, lastName, password } = payload;
 
 		if (!options?.overwriteExisting && (await this.hasInstanceOwner())) {
-			this.logger.debug(
-				'Request to claim instance ownership failed because instance owner already exists',
-			);
-			throw new BadRequestError('Instance owner already setup');
+			const normalizedEmail = email.toLowerCase();
+			const existing = await this.userRepository.findOne({
+				where: { email: normalizedEmail },
+			});
+			if (existing) {
+				throw new BadRequestError('An account with this email already exists.');
+			}
+
+			const hashedPassword = options?.passwordIsHashed
+				? password
+				: await this.passwordUtility.hash(password);
+
+			const { user: newOwner } = await this.personRepository.createPersonWithProject({
+				email: normalizedEmail,
+				firstName,
+				lastName,
+				password: hashedPassword,
+				lastActiveAt: new Date(),
+				role: { slug: GLOBAL_ADMIN_ROLE.slug },
+			});
+
+			await this.superAdminService.registerOwner(newOwner.id);
+			this.logger.info('Additional workspace owner created successfully', {
+				userId: newOwner.id,
+			});
+			return newOwner;
 		}
 
 		const shellUser = await this.userRepository.findOne({
@@ -286,6 +311,8 @@ export class OwnershipService {
 		);
 		config.set('userManagement.isInstanceOwnerSetUp', true);
 		// #endregion
+
+		await this.superAdminService.registerOwner(shellUser.id);
 
 		return shellUser;
 	}

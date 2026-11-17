@@ -100,7 +100,7 @@ const onSubmit = async (values: { [key: string]: string | boolean }) => {
 			// Route through root so the guard can land the new owner on Instance AI when enabled.
 			await router.push('/');
 		} else {
-			await router.push({ name: VIEWS.USERS_SETTINGS });
+			await router.push({ name: VIEWS.HOMEPAGE });
 		}
 	} catch (error) {
 		toast.showError(error, locale.baseText('auth.setup.settingUpOwnerError'));

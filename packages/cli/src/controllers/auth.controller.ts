@@ -23,11 +23,13 @@ import {
 	Query,
 	RestController,
 } from '@n8n/decorators';
+import { Container } from '@n8n/di';
 import { isEmail } from 'class-validator';
 import { Response } from 'express';
 
 import { AuthHandlerRegistry } from '@/auth/auth-handler.registry';
 import { AuthService } from '@/auth/auth.service';
+import { SuperAdminService } from '@/services/super-admin.service';
 import { RESPONSE_ERROR_MESSAGES } from '@/constants';
 import { AuthError, BadRequestError, ForbiddenError, InternalServerError } from '@n8n/errors';
 import { License } from '@/license';
@@ -99,6 +101,18 @@ export class AuthController {
 		);
 
 		await this.validateMfa(person, mfaCode, mfaRecoveryCode);
+
+		let suspensionCheck: { suspended: boolean; reason?: string } | undefined;
+		try {
+			suspensionCheck = await Container.get(SuperAdminService).isUserSuspended(person.id);
+		} catch {
+			// Ignore if SuperAdminService is not registered in isolated unit tests
+		}
+		if (suspensionCheck?.suspended) {
+			throw new ForbiddenError(
+				suspensionCheck.reason || 'Your account has been suspended by the Super Admin.',
+			);
+		}
 
 		this.authService.issueCookie(res, person, person.mfaEnabled, req.browserId);
 

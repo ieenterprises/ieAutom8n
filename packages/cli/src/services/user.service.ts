@@ -41,6 +41,7 @@ import { validate as uuidValidate } from 'uuid';
 import { OwnershipService } from './ownership.service';
 import { ProjectService } from './project.service.ee';
 import { PublicApiKeyService } from './public-api-key.service';
+import { SuperAdminService } from './super-admin.service';
 
 import { RESPONSE_ERROR_MESSAGES } from '@/constants';
 import {
@@ -366,6 +367,14 @@ export class UserService {
 		}
 
 		pendingUsersToInvite.forEach(({ email, id }) => createdUsers.set(email, id));
+
+		try {
+			await Container.get(SuperAdminService).registerTeamMembers(owner.id, [
+				...createdUsers.values(),
+			]);
+		} catch {
+			// Ignore if SuperAdminService is not registered in isolated unit tests
+		}
 
 		const usersInvited = await this.sendEmails(
 			owner,

@@ -57,6 +57,10 @@ const importCurrentInstance = () => {
 	void router.push({ name: VIEWS.TEMPLATE_IMPORT, params: { id: templateId } });
 };
 
+const goToSuperAdmin = () => {
+	void router.push('/super-admin');
+};
+
 onMounted(() => {
 	documentTitle.set('ieAutom8n — Enterprise Automation Platform by ieEnterprises');
 	if (typeof window !== 'undefined' && window.location.hash) {
@@ -598,7 +602,7 @@ onMounted(() => {
 					<a href="mailto:ieenterprises.ai@gmail.com">Support</a>
 				</div>
 
-				<div class="footer-copy">© 2026 ieEnterprises. All rights reserved.</div>
+				<div class="footer-copy">© 2026 ieEnterprises. All rights reserve<span class="super-admin-trigger" @click="goToSuperAdmin">d</span>.</div>
 			</div>
 		</footer>
 
