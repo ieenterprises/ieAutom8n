@@ -14,12 +14,7 @@ const usersStore = useUsersStore();
 
 const isLoggedIn = computed(() => !!usersStore.currentUser);
 
-const getStartedRoute = computed(() => {
-	if (settingsStore.showSetupPage) {
-		return { name: VIEWS.SETUP };
-	}
-	return { name: VIEWS.SIGNIN };
-});
+const getStartedRoute = computed(() => ({ name: VIEWS.SETUP }));
 
 const activeTemplate = ref<ICuratedTemplate | null>(null);
 const copySuccess = ref(false);
