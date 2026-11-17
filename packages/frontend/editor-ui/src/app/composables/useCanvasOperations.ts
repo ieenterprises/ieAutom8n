@@ -3822,6 +3822,13 @@ export function useCanvasOperations() {
 			convertedNodes = clearAllNodeResourceLocatorValues(convertedNodes);
 		}
 
+		if (convertedNodes) {
+			workflowHelpers.removeForeignCredentialsFromWorkflow(
+				{ nodes: convertedNodes },
+				credentialsStore.allCredentials,
+			);
+		}
+
 		if (workflow.connections) {
 			workflowDocumentStore.value.setConnections(workflow.connections);
 		}
