@@ -1,5 +1,5 @@
 # Production Dockerfile for deploying ieAutom8n to Render.com
-FROM n8nio/n8n:latest
+FROM ghcr.io/ieenterprises/ieautom8n:latest
 
 USER node
 
