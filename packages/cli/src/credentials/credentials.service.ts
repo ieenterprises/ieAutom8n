@@ -1116,12 +1116,112 @@ export class CredentialsService {
 	 *
 	 * If `includeRawData` is set to true it will not redact the data.
 	 */
+	private readonly inFlightChatGptRefreshes = new Map<
+		string,
+		Promise<ICredentialDataDecryptedObject>
+	>();
+
+	private async refreshOpenAiChatGptTokenIfNeeded(
+		credential: CredentialsEntity,
+		data: ICredentialDataDecryptedObject,
+	): Promise<ICredentialDataDecryptedObject> {
+		if (credential.type !== 'openAiApi') {
+			return data;
+		}
+		const refreshToken =
+			typeof data.oauthRefreshToken === 'string' ? data.oauthRefreshToken.trim() : '';
+		const expiresAt = typeof data.oauthTokenExpiresAt === 'number' ? data.oauthTokenExpiresAt : 0;
+		if (!refreshToken || !expiresAt || Date.now() < expiresAt - 120_000) {
+			return data;
+		}
+
+		const existing = this.inFlightChatGptRefreshes.get(credential.id);
+		if (existing) {
+			return await existing;
+		}
+
+		const refreshPromise = (async () => {
+			try {
+				const clientId =
+					typeof data.oauthClientId === 'string' && data.oauthClientId.trim()
+						? data.oauthClientId.trim()
+						: 'dynamic_agent_client';
+
+				const params = new URLSearchParams({
+					grant_type: 'refresh_token',
+					refresh_token: refreshToken,
+					client_id: clientId,
+				});
+
+				const res = await fetch('https://auth.openai.com/api/accounts/oauth/token', {
+					method: 'POST',
+					headers: {
+						Accept: 'application/json',
+						'Content-Type': 'application/x-www-form-urlencoded',
+					},
+					body: params.toString(),
+				});
+
+				if (!res.ok) {
+					this.logger.warn(`ChatGPT OAuth token refresh failed with status ${res.status}`, {
+						credentialId: credential.id,
+					});
+					return data;
+				}
+
+				const tokenJson = (await res.json()) as {
+					access_token?: string;
+					refresh_token?: string;
+					expires_in?: number;
+				};
+
+				if (!tokenJson.access_token) {
+					return data;
+				}
+
+				const updatedData: ICredentialDataDecryptedObject = {
+					...data,
+					apiKey: tokenJson.access_token,
+					oauthRefreshToken: tokenJson.refresh_token || refreshToken,
+					oauthTokenExpiresAt: Date.now() + (tokenJson.expires_in ?? 3600) * 1000,
+					oauthClientId: clientId,
+				};
+
+				const encrypted = await this.encryptCredentialData({
+					id: credential.id,
+					name: credential.name,
+					type: credential.type,
+					data: updatedData,
+				});
+
+				await this.credentialsRepository.update(credential.id, {
+					data: encrypted.data,
+					updatedAt: encrypted.updatedAt,
+				});
+				credential.data = encrypted.data;
+
+				return updatedData;
+			} catch (error) {
+				this.logger.warn('Failed to auto-refresh ChatGPT OAuth token', {
+					credentialId: credential.id,
+					error: error instanceof Error ? error.message : String(error),
+				});
+				return data;
+			} finally {
+				this.inFlightChatGptRefreshes.delete(credential.id);
+			}
+		})();
+
+		this.inFlightChatGptRefreshes.set(credential.id, refreshPromise);
+		return await refreshPromise;
+	}
+
 	async decrypt(credential: CredentialsEntity, includeRawData = false) {
 		const coreCredential = createCredentialsFromCredentialsEntity(credential);
 		try {
 			const data = await coreCredential.getData();
 			if (includeRawData) {
-				return data;
+				return await this.refreshOpenAiChatGptTokenIfNeeded(credential, data);
 			}
 			return this.redact(data, credential);
 		} catch (error) {
@@ -1143,7 +1243,8 @@ export class CredentialsService {
 	 * must not treat unreadable data as empty.
 	 */
 	async decryptOrFail(credential: CredentialsEntity): Promise<ICredentialDataDecryptedObject> {
-		return await createCredentialsFromCredentialsEntity(credential).getData();
+		const data = await createCredentialsFromCredentialsEntity(credential).getData();
+		return await this.refreshOpenAiChatGptTokenIfNeeded(credential, data);
 	}
 
 	async updateDescription(

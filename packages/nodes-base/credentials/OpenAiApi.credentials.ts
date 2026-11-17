@@ -73,6 +73,24 @@ export class OpenAiApi implements ICredentialType {
 			},
 			default: '',
 		},
+		{
+			displayName: 'OAuth Refresh Token',
+			name: 'oauthRefreshToken',
+			type: 'hidden',
+			default: '',
+		},
+		{
+			displayName: 'OAuth Token Expires At',
+			name: 'oauthTokenExpiresAt',
+			type: 'hidden',
+			default: 0,
+		},
+		{
+			displayName: 'OAuth Client ID',
+			name: 'oauthClientId',
+			type: 'hidden',
+			default: '',
+		},
 	];
 
 	test: ICredentialTestRequest = {

@@ -618,7 +618,10 @@ async function startChatGptSignInForCredential() {
 
 async function completeChatGptSignInForCredential() {
 	try {
-		const data = await makeRestApiRequest<{ accessToken?: string } | undefined>(
+		const data = await makeRestApiRequest<
+			| { accessToken?: string; refreshToken?: string; expiresIn?: number; clientId?: string }
+			| undefined
+		>(
 			rootStore.restApiContext,
 			'POST',
 			'/composio/chatgpt-complete',
@@ -631,6 +634,15 @@ async function completeChatGptSignInForCredential() {
 			throw new Error('ChatGPT sign-in did not return an access token.');
 		}
 		emit('update', { name: 'apiKey', value: data.accessToken });
+		emit('update', { name: 'oauthRefreshToken', value: data.refreshToken ?? '' });
+		emit('update', {
+			name: 'oauthTokenExpiresAt',
+			value: data.expiresIn ? Date.now() + data.expiresIn * 1000 : 0,
+		});
+		emit('update', {
+			name: 'oauthClientId',
+			value: data.clientId ?? 'dynamic_agent_client',
+		});
 		isSigningInChatGpt.value = false;
 		chatGptPendingState.value = '';
 		chatGptCallbackUrl.value = '';

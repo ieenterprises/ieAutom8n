@@ -105,6 +105,9 @@ const failureDetail = ref<string | null>(null);
 const success = ref<VerificationSuccess | null>(null);
 const modelProvider = ref<InstanceAiModelProvider>('anthropic');
 const modelApiKey = ref('');
+const chatGptRefreshToken = ref('');
+const chatGptTokenExpiresAt = ref(0);
+const chatGptClientId = ref('');
 const modelBaseUrl = ref('');
 const modelName = ref<string>(DEFAULT_MODEL_NAME);
 const sandboxProvider = ref<'n8n-sandbox' | 'daytona' | null>(null);
@@ -507,6 +510,11 @@ function selectSearchProvider(provider: unknown): void {
 function modelConnection(): InstanceAiConnectionUpdate {
 	const data: Record<string, unknown> = {};
 	if (modelApiKey.value.trim()) data.apiKey = modelApiKey.value.trim();
+	if (modelProvider.value === 'openai' && chatGptRefreshToken.value) {
+		data.oauthRefreshToken = chatGptRefreshToken.value;
+		data.oauthTokenExpiresAt = chatGptTokenExpiresAt.value;
+		data.oauthClientId = chatGptClientId.value || 'dynamic_agent_client';
+	}
 	if (modelProvider.value === 'custom') {
 		data.url = modelBaseUrl.value.trim();
 	} else if (modelConfig.value.defaultBaseUrl) {
@@ -654,7 +662,10 @@ async function startChatGptSignIn(): Promise<void> {
 async function completeChatGptSignIn(): Promise<void> {
 	oauthErrorMessage.value = '';
 	try {
-		const data = await makeRestApiRequest<{ accessToken?: string } | undefined>(
+		const data = await makeRestApiRequest<
+			| { accessToken?: string; refreshToken?: string; expiresIn?: number; clientId?: string }
+			| undefined
+		>(
 			rootStore.restApiContext,
 			'POST',
 			'/composio/chatgpt-complete',
@@ -667,6 +678,9 @@ async function completeChatGptSignIn(): Promise<void> {
 			throw new Error('ChatGPT sign-in did not return an access token.');
 		}
 		modelApiKey.value = data.accessToken;
+		chatGptRefreshToken.value = data.refreshToken ?? '';
+		chatGptTokenExpiresAt.value = data.expiresIn ? Date.now() + data.expiresIn * 1000 : 0;
+		chatGptClientId.value = data.clientId ?? 'dynamic_agent_client';
 		isSigningInChatGpt.value = false;
 		chatGptPendingState.value = '';
 		chatGptAuthUrl.value = '';
