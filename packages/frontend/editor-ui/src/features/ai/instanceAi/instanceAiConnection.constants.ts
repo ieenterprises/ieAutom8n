@@ -24,7 +24,19 @@ export type InstanceAiSearchProvider = 'searxng' | 'brave' | 'disabled';
 
 export const INSTANCE_AI_CURATED_MODELS = {
 	anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5'],
-	openai: ['gpt-6.1-sol', 'gpt-6-astra', 'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'o3-mini'],
+	openai: [
+		'gpt-6.1-sol',
+		'gpt-6-astra',
+		'gpt-5.4',
+		'gpt-5.2',
+		'gpt-5.1',
+		'gpt-5',
+		'gpt-5.1-codex',
+		'gpt-4o',
+		'gpt-4o-mini',
+		'gpt-4.1',
+		'o3-mini',
+	],
 	google: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
 	// OpenRouter uses dotted versions for Claude (`claude-opus-5.5`, not `claude-opus-5-5`).
 	openrouter: [
