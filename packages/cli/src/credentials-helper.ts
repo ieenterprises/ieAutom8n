@@ -41,6 +41,7 @@ import {
 import { UnexpectedError, UserError } from '@n8n/errors';
 
 import { CredentialTypes } from '@/credential-types';
+import { refreshOpenAiChatGptTokenIfNeeded } from '@/credentials/chatgpt-oauth-refresh';
 import { CredentialsOverwrites } from '@/credentials-overwrites';
 import { hasTokenData } from '@/managed-versions';
 import { DCR_MANAGED_CREDENTIAL_FIELDS, OAUTH_PINNED_FIELDS } from '@/oauth/dcr-managed-fields';
@@ -630,6 +631,11 @@ export class CredentialsHelper extends ICredentialsHelper {
 			credentialsEntity.data,
 		);
 		let decryptedDataOriginal = await credentials.getData();
+		decryptedDataOriginal = await refreshOpenAiChatGptTokenIfNeeded({
+			credential: credentialsEntity,
+			data: decryptedDataOriginal,
+			credentialsRepository: this.credentialsRepository,
+		});
 
 		// In manual or internal mode (or when the root execution is manual, e.g. a subworkflow
 		// called from a manual parent), skip dynamic resolution unless a credentials context is
