@@ -141,6 +141,8 @@ export function useWorkflowInitialization() {
 		}
 
 		const curated = findCuratedTemplate(templateId.toString());
+		const loadWorkflowFromJSON = route.query.fromJson === 'true';
+
 		if (curated) {
 			const cloned = JSON.parse(JSON.stringify(curated.workflow));
 			await openWorkflowTemplateFromJSON({
@@ -151,12 +153,7 @@ export function useWorkflowInitialization() {
 					templateId: curated.id,
 				},
 			});
-			return true;
-		}
-
-		const loadWorkflowFromJSON = route.query.fromJson === 'true';
-
-		if (loadWorkflowFromJSON) {
+		} else if (loadWorkflowFromJSON) {
 			const workflow = getSampleWorkflowByTemplateId(templateId.toString());
 			if (!workflow) {
 				toast.showError(

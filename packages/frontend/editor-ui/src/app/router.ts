@@ -433,9 +433,9 @@ export const routes: RouteRecordRaw[] = [
 			keepWorkflowAlive: true,
 			middleware: ['authenticated'],
 		},
-		beforeEnter: (to) => {
+		beforeEnter: (to, from) => {
 			const templateId = (to.query.templateId as string) || (to.query.template as string);
-			if (templateId) {
+			if (templateId && from.name !== VIEWS.TEMPLATE_IMPORT) {
 				return {
 					name: VIEWS.TEMPLATE_IMPORT,
 					params: { id: templateId },
