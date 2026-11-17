@@ -173,16 +173,29 @@ export class ChatHubModelsService {
 		credentials: INodeCredentials,
 		additionalData: IWorkflowExecuteAdditionalData,
 	): Promise<INodePropertyOptions[]> {
-		const resourceLocatorResults = await this.nodeParametersService.getResourceLocatorResults(
-			'searchModels',
-			'parameters.model',
-			additionalData,
-			PROVIDER_NODE_TYPE_MAP.openai,
-			{},
-			credentials,
-		);
+		let results: INodePropertyOptions[] = [];
+		try {
+			const resourceLocatorResults = await this.nodeParametersService.getResourceLocatorResults(
+				'searchModels',
+				'parameters.model',
+				additionalData,
+				PROVIDER_NODE_TYPE_MAP.openai,
+				{},
+				credentials,
+			);
+			results = resourceLocatorResults.results;
+		} catch {
+			// Fallback to curated OpenAI models if /v1/models is unavailable for ChatGPT OAuth tokens
+		}
 
-		return resourceLocatorResults.results;
+		const curatedModels: INodePropertyOptions[] = [
+			{ name: 'gpt-6.1-sol', value: 'gpt-6.1-sol' },
+			{ name: 'gpt-6-astra', value: 'gpt-6-astra' },
+		];
+		const existingValues = new Set(results.map((m) => String(m.value)));
+		const missingCurated = curatedModels.filter((m) => !existingValues.has(String(m.value)));
+
+		return [...missingCurated, ...results];
 	}
 
 	private async fetchAnthropicModels(
