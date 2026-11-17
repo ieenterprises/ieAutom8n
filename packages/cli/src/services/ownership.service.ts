@@ -248,7 +248,7 @@ export class OwnershipService {
 
 		if (!options?.overwriteExisting && (await this.hasInstanceOwner())) {
 			const normalizedEmail = email.toLowerCase();
-			const existing = await this.userRepository.findOne({
+			const existing = await this.personRepository.findOne({
 				where: { email: normalizedEmail },
 			});
 			if (existing) {

@@ -1,14 +1,13 @@
 import {
 	GLOBAL_ADMIN_ROLE,
 	GLOBAL_OWNER_ROLE,
+	Person,
 	PersonRepository,
 	SettingsRepository,
 	UserRepository,
 } from '@n8n/db';
 import { Service } from '@n8n/di';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-
-import config from '@/config';
 
 export type TenantPlan = 'free' | 'starter' | 'pro' | 'enterprise';
 export type TenantStatus = 'active' | 'suspended';
@@ -67,7 +66,11 @@ export class SuperAdminService {
 	}
 
 	private getSigningSecret(): string {
-		return process.env.SUPER_ADMIN_SECRET || config.get('encryptionKey') || 'ieautom8n-super-admin';
+		return (
+			process.env.SUPER_ADMIN_SECRET ||
+			process.env.N8N_ENCRYPTION_KEY ||
+			'ieautom8n-super-admin'
+		);
 	}
 
 	signSessionToken(email: string): string {
@@ -219,7 +222,7 @@ export class SuperAdminService {
 		unassignedUsers: SuperAdminUserView[];
 	}> {
 		const registry = await this.loadRegistry();
-		const users = await this.userRepository.find({ relations: ['role'] });
+		const users = await this.personRepository.find({ relations: ['role'] });
 		const userMap = new Map(users.map((u) => [u.id, u]));
 		const suspendedSet = new Set(registry.suspendedUserIds);
 
@@ -248,7 +251,7 @@ export class SuperAdminService {
 		}
 
 		const toUserView = (
-			user: (typeof users)[number],
+			user: Person,
 			overrideStatus?: TenantStatus,
 		): SuperAdminUserView => ({
 			id: user.id,
@@ -338,9 +341,6 @@ export class SuperAdminService {
 		registry.suspendedUserIds = registry.suspendedUserIds.filter((id) => id !== userId);
 		await this.saveRegistry(registry);
 
-		const person = await this.personRepository.findById(userId);
-		if (person) {
-			await this.personRepository.remove(person);
-		}
+		await this.personRepository.delete({ id: userId });
 	}
 }
