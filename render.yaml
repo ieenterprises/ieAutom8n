@@ -23,3 +23,36 @@ services:
         value: "true"
       - key: EXECUTIONS_DATA_MAX_AGE
         value: "168"
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        fromDatabase:
+          name: ieautom8n-db
+          property: host
+      - key: DB_POSTGRESDB_PORT
+        fromDatabase:
+          name: ieautom8n-db
+          property: port
+      - key: DB_POSTGRESDB_DATABASE
+        fromDatabase:
+          name: ieautom8n-db
+          property: database
+      - key: DB_POSTGRESDB_USER
+        fromDatabase:
+          name: ieautom8n-db
+          property: user
+      - key: DB_POSTGRESDB_PASSWORD
+        fromDatabase:
+          name: ieautom8n-db
+          property: password
+      - key: DB_POSTGRESDB_SSL_ENABLED
+        value: "true"
+      - key: DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED
+        value: "false"
+
+databases:
+  - name: ieautom8n-db
+    databaseName: ieautom8n
+    user: ieautom8n
+    plan: free
+    region: oregon
