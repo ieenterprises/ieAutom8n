@@ -1213,6 +1213,10 @@ const router = createRouter({
 			// for templates view, reset scroll position in this case
 			to.meta.setScrollPosition(0);
 		}
+		if (to.hash) {
+			return { el: to.hash, behavior: 'smooth' };
+		}
+		return savedPosition ?? undefined;
 	},
 	routes: routes.map(withCanvasReadOnlyMeta),
 });

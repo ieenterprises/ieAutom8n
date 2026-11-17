@@ -57,12 +57,21 @@ const currentDomain = computed(() => {
 
 const importCurrentInstance = () => {
 	if (!activeTemplate.value) return;
+	const templateId = activeTemplate.value.id;
 	closeTemplateModal();
-	void router.push({ name: VIEWS.TEMPLATE_IMPORT, params: { id: activeTemplate.value.id } });
+	void router.push({ name: VIEWS.TEMPLATE_IMPORT, params: { id: templateId } });
 };
 
 onMounted(() => {
 	documentTitle.set('ieAutom8n — Enterprise Automation Platform by ieEnterprises');
+	if (typeof window !== 'undefined' && window.location.hash) {
+		const target = document.querySelector(window.location.hash);
+		if (target) {
+			requestAnimationFrame(() => {
+				target.scrollIntoView({ behavior: 'smooth' });
+			});
+		}
+	}
 });
 </script>
 
