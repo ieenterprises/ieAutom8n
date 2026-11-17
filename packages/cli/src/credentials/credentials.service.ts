@@ -1187,7 +1187,7 @@ export class CredentialsService {
 					oauthClientId: clientId,
 				};
 
-				const encrypted = await this.encryptCredentialData({
+				const encrypted = await this.createEncryptedData({
 					id: credential.id,
 					name: credential.name,
 					type: credential.type,
